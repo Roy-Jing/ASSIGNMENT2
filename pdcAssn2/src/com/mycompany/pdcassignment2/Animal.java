@@ -1,4 +1,4 @@
-package com.mycompany.pdcassignment2;
+  package com.mycompany.pdcassignment2;
 
 public abstract class Animal extends MoveableFigureBaseDecorator{   
     
