@@ -101,6 +101,8 @@ public class DatabaseModel {
     }
     
     
+    public 
+    
     public boolean login(String username, String pswd){
         
             try{
@@ -144,3 +146,4 @@ class Preferences{
     
     
 }
+
