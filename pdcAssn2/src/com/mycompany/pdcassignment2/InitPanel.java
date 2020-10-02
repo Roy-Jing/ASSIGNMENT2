@@ -91,7 +91,7 @@ public class InitPanel extends JPanel implements Observer {
         controller.addModel(gM);
         controller.addView(p);
         p.addController(controller);
-       
+    
         f.add(p);
         
         

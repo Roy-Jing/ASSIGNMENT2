@@ -104,7 +104,7 @@ public class DatabaseModel {
     public boolean login(String username, String pswd){
         
             try{
-                conn = DriverManager.getConnection("jdbc:derby:gameDB;create=true");
+                conn = DriverManager.getConnection("jdbc:derby:gameDB;create=true", "pdc", "pdc");
                 
                 this.createIfNonExistent();
                 return true;
