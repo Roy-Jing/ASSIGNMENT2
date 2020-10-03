@@ -5,6 +5,7 @@
  */
 package com.mycompany.pdcassignment2;
 
+import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -14,8 +15,10 @@ import java.util.Observer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -60,16 +63,39 @@ public class InitPanel extends JPanel implements Observer {
     private JTextField passwordField;
     private JButton nextButton;
     private JButton createNewUserBtn = new JButton("create user");
+    private JComboBox screenDimSelection;
+    private JComboBox bgSelection;
+    private JButton confirmBtn;
 
+    public JButton getConfirmBtn() {
+        return confirmBtn;
+    }
+
+    public void setConfirmBtn(JButton confirmBtn) {
+        this.confirmBtn = confirmBtn;
+    }
+    JButton yes = new JButton("Yes");
+
+    public JButton getYes() {
+        return yes;
+    }
+
+    public JButton getNo() {
+        return no;
+    }
+        JButton no = new JButton("No, use default settings");
     public JButton getCreateNewUserBtn() {
         return createNewUserBtn;
     }
+    
+    
     
     private GridBagConstraints gbc = new GridBagConstraints();
     private JScrollPane messagePane;
     private InitPanelController controller;
     
     InitPanel(){
+        
         
         this.setLayout(new GridBagLayout());
         usernameField = new JTextField("            ");
@@ -78,24 +104,36 @@ public class InitPanel extends JPanel implements Observer {
         loginButton = new JButton("Login");
         loginButton.addActionListener(controller);
         
+        
     }
     
     public static void main(String args[]){
-        
+        //if preferences is null (non-existent0
+            //bring user to preferences menu
+            //if preferences is not null
+            
+            
         JFrame f = new JFrame();
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         InitPanel p = new InitPanel();
-        DatabaseModel dbModel = new DatabaseModel();
+        
+        
         InitPanelController controller = new InitPanelController();
+        GameGUI gameGUI = new GameGUI();
+        
         GameModel gM = new GameModel();
         
+        gM.addObserver(gameGUI);
+       // gM.addObserver(p);
         controller.addModel(gM);
         controller.addView(p);
+        
         p.addController(controller);
-    
+     
         f.add(p);
         
         
-        gM.addDatabse(dbModel);
+        
         p.dispTips();
         f.setVisible(true);
         
@@ -154,7 +192,53 @@ public class InitPanel extends JPanel implements Observer {
           
         gbc.gridx = gbc.gridy = 2;
         add(nextButton);
-       
+        
+        
+    }
+    public void askForUsingDefaultSetting(){
+        JPanel prompt = new JPanel();
+        JLabel message = new JLabel("Previous settings exist, would you like to use them?");
+        Container buttonContainer = new Container();
+        
+        buttonContainer.add(yes);
+        buttonContainer.add(no);
+        prompt.add(message);
+        prompt.add(buttonContainer);
+        
+        JFrame promptWind = new JFrame();
+        promptWind.add(prompt);
+        promptWind.setVisible(true);
+        promptWind.setAlwaysOnTop(true);
+    }
+    
+   
+    
+    public void getPreferences(){
+        confirmBtn = new JButton("Play!");
+        
+        screenDimSelection = new JComboBox();
+        screenDimSelection.addItem("100x50 (Recommended");
+        screenDimSelection.addItem("200x100");
+        screenDimSelection.addItem("400x200");
+        this.removeAll();
+        gbc.gridx = 1; gbc.gridy = 1;
+        
+        this.add(new JLabel("Choose a screen size: "));
+        gbc.gridx = 2; gbc.gridy = 1;
+        this.add(screenDimSelection);
+
+        gbc.gridx = 1; gbc.gridy = 4;
+        this.add(new JLabel("Choose a background colour: "));
+
+        gbc.gridx = 2; gbc.gridy = 4;
+         this.add(new JLabel("Choose a background colour: "));
+         
+         gbc.gridx = gbc.gridy = 5;
+        this.add(this.confirmBtn);
+        this.repaint();
+        this.revalidate();
+        
+
     }
     public void displayError(String errMessage){
         
@@ -191,7 +275,7 @@ public class InitPanel extends JPanel implements Observer {
 class InitPanelController implements ActionListener{
         InitPanel p;
         GameModel m;
-        DatabaseModel dbM = new DatabaseModel();
+        
         public void addView(InitPanel p){
             this.p = p;
         }
@@ -206,15 +290,22 @@ class InitPanelController implements ActionListener{
                 p.bringToLogin();
             } else if (e.getSource() == p.getLoginButton()){
                 
-                if (dbM.login(p.getUsernameField().getText(), p.getPasswordField().getText()) == false){
-                    out.println("login unsuccessful");//display login failure
-                } 
                 
-                m.init();
+                if (m.init()){
+                    p.askForUsingDefaultSetting();
+                } else{
+                    m.useDefaultSetting(true);
+                    
+                }
                 
             } else if (e.getSource() == p.getCreateNewUserBtn()){
-                dbM.createUser(p.getUsernameField().getText(), p.getPasswordField().getText());
+                out.println("create user");
                 
+            
+            }else if (e.getSource() == p.getYes()){
+                m.useDefaultSetting(true);
+            } else if (e.getSource() == p.getNo()){
+                m.useDefaultSetting(false);
             }
         }
 }

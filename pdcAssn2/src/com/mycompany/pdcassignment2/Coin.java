@@ -14,32 +14,38 @@ import java.awt.Graphics;
  */
 public class Coin extends CollideableFigureBaseDecorator{
     private int value;
-    private int radius;
-    private int width;
+   
     private Color color;
     private boolean isCollected = false;
+    private int ovalWidth = 10;
+    private int coinSize = 10;
+    private int spinDir = -1;
     Coin(CollideableFigure fig){
         super(fig);
         color = Color.YELLOW;
         
     }
-    public void drawSelf(Graphics g){
-        g.setColor(color);
+    
+    public void spin(){
+        if (ovalWidth == 1){
+            spinDir = 1;
+        } else if (ovalWidth == coinSize){
+            spinDir = -1;
+        }
         
-        g.fillOval(super.getCoordX(), super.getCoordY(), width, radius);
+        ovalWidth += spinDir;
         
     }
     
-    public void run(){
-        while (!isCollected){
-            int direction = 1;
-            if (width == radius){
-                direction *= -1;
-            } else if (width == 0)
-                direction *= -1;
-            
-            width += direction;
-        }
+    
+    public void drawSelf(Graphics g){
+        g.setColor(color);
+        
+        g.fillOval(super.getCoordX(), super.getCoordY(), ovalWidth , coinSize--);
+       
+        spin();
+        
     }
-   
+    
+    
 }

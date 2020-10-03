@@ -28,9 +28,7 @@
 //        return new Bird(new MoveableObject());
 //    } 
 //   
-//    public void drawSelf(Graphics g){
-//        
-//    }
+
 //    public void run(){
 //        while (super.getRightMostCoordX() >= 0){
 //            

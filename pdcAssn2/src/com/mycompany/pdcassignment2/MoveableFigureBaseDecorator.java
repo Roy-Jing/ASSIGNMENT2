@@ -1,5 +1,7 @@
 package com.mycompany.pdcassignment2;
 
+import java.awt.Graphics;
+
 
 
 /*
@@ -12,7 +14,7 @@ package com.mycompany.pdcassignment2;
  *
  * @author Roy
  */
-public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
+public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Runnable{
     
     protected MoveableFigure figure;
 
@@ -20,7 +22,11 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
     public char getSymbol() {
         return figure.getSymbol();
     }
-
+    
+    public void run(){
+        new Thread(figure).start();
+    }
+    
     @Override
     public void setSymbol(char symbol) {
         figure.setSymbol(symbol);
@@ -118,7 +124,9 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
     }
         
 
-   
+    public void drawSelf(Graphics g){
+        figure.drawSelf(g);
+    }
     
     
 }

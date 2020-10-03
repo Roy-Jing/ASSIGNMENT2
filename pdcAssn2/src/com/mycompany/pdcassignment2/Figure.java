@@ -12,8 +12,7 @@ import java.awt.Graphics;
  */
 public interface Figure {
     
-    public void drawSelf(Graphics g);
-    
+ 
     public int getRightMostCoordX();
   
     public int getCoordX();
@@ -40,7 +39,7 @@ interface CollideableFigure extends Figure{
 }
 
 
-interface MoveableFigure extends Figure{
+interface MoveableFigure extends Figure, Runnable{
  
     public int getNumPixels();
 
@@ -70,7 +69,7 @@ interface MoveableFigure extends Figure{
     
     public void setOriginalForm(int[][] form);
  
-    
+    public void drawSelf(Graphics g);
 }
 
 

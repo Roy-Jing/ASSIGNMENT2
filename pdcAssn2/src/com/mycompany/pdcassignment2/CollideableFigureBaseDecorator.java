@@ -1,5 +1,7 @@
 package com.mycompany.pdcassignment2;
 
+import java.awt.Graphics;
+
 /**
  *  Base decorator for CollideableObject
  *  To be extended by concrete decorator classes:
@@ -13,6 +15,9 @@ public abstract class CollideableFigureBaseDecorator implements CollideableFigur
         figure = f;
     }
 
+    
+    
+    
     @Override
     public void setRightMostCoordX(int rightMostCoordX) {
         figure.setRightMostCoordX(rightMostCoordX);
@@ -60,4 +65,5 @@ public abstract class CollideableFigureBaseDecorator implements CollideableFigur
          return figure.willIntersect( feetLocationY, dVelocityY);
      }
    
+
 }
