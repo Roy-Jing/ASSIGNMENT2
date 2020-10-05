@@ -11,11 +11,14 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import static java.lang.System.out;
+import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,17 +34,22 @@ public class GameGUI extends JPanel implements Observer {
     private JDialog userInfoPane;
     private Graphics graphics;
     private boolean running = false;
-    private MoveableFigure figures[];
+    private JPanel promptWindow;
+    private JButton yes, no;
+    
     private Color bgColor;
     private Dimension screenDim;
     private JFrame frame;
-    
+    private LinkedList<MoveableFigure> tempFigs;
+    private GameController preferenceController;
     
     GameGUI(){
         frame = new JFrame();
     }
     
     
+    
+   
     public void addController(DinoController dinoCon){
         this.addKeyListener(dinoCon);
         
@@ -50,13 +58,23 @@ public class GameGUI extends JPanel implements Observer {
     
     
     public void paintComponent(Graphics g){
+        GameModel.setDrawing(true);
         super.paintComponent(g);
         
-        for (MoveableFigure fig : figures){
-            fig.drawSelf(g);
-        }
-        g.drawString(currentScore.toString(), 0, 0);
+        out.println("drawing");
         
+        if (tempFigs != null){
+            out.println("drawing self");
+            
+            tempFigs.forEach((fig) -> {
+                fig.drawSelf(g);
+            });
+            
+        } else 
+            out.println("temFigs is null");
+        
+        //g.drawString(currentScore.toString(), 0, 0);
+        GameModel.setDrawing(false);
         
     }
     
@@ -65,18 +83,27 @@ public class GameGUI extends JPanel implements Observer {
     public void update(Observable o, Object arg) {
         
         if (arg instanceof Preferences){
+            
             out.println("GameGUI notified");
             
             bgColor = ((Preferences) arg).getBgColour();
             screenDim = ((Preferences) arg).getScreenDim();
             
             this.setBackground(bgColor);
-            frame.setSize(screenDim);
+            frame.setSize(500, 500);
             frame.add(this);
-            
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setVisible(true);
-        } else
+            out.println("set visible");
+            
+        } else if (arg instanceof LinkedList){
+            tempFigs = (LinkedList<MoveableFigure>) arg;
+            out.println("refreshing frame");
+            
             repaint();
+            out.println("after calling repaint");
+            
+        }
     }
     
     

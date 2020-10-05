@@ -5,6 +5,11 @@
  */
 package com.mycompany.pdcassignment2;
 
+import java.awt.Dimension;
+import static java.lang.System.out;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
@@ -18,26 +23,58 @@ import java.util.logging.Logger;
  */
 public class GameModel extends Observable{
     private int currentScore = 0;
-    private int numCoinsCollected = 0;
+    private static int numCoinsCollected = 0;
     private Preferences preferences;
+    private static boolean reset = false;
+    private static volatile boolean drawing = false;
+    
+    public static boolean isDrawing() {
+        return drawing;
+    }
 
+    public static void setDrawing(boolean drawing) {
+        GameModel.drawing = drawing;
+    }
+    
     public Preferences getPreferences() {
         return preferences;
     }
 
+    public static void addCoins(){
+        numCoinsCollected += 1;
+    }
+    public static boolean reset(){
+        return reset;
+        
+    }
     public void setPreferences(Preferences preferences) {
         this.preferences = preferences;
     }
     private final static int pixelSize = 5;
     private static int frameWidth;
     private static Random rand = new Random();
-    private int numCurrentFigs;
-    private static int drawCount = 0;
+    private volatile int numCurrentFigs;
+
+    public int getNumCurrentFigs() {
+        return numCurrentFigs;
+    }
+
+    
+    public synchronized void setNumCurrentFigs(int numCurrentFigs) {
+        this.numCurrentFigs = numCurrentFigs;
+    }
+    
+  
+    private volatile static int drawCount = 0;
     private volatile boolean gameOver = false;
-    private int spawnPeriod = 2000;
+    private int spawnPeriod = 5000;
     
     public static int getDrawCount() {
         return drawCount;
+    }
+    
+    public static void setDrawCount(int ct) {
+        drawCount = ct;
     }
     public static Random getRand() {
         return rand;
@@ -45,17 +82,14 @@ public class GameModel extends Observable{
     
     
     
-    public void update(){
+    public synchronized void updateCount(){
+        out.println("update called");
+        
         drawCount++;
-        if (drawCount == numCurrentFigs){
-            
-            drawCount = 0;
-            setChanged();
-            this.notifyObservers();
-            
-        }
+        
     }
     
+   
     public static int getFrameWidth() {
         return frameWidth;
     }
@@ -104,54 +138,160 @@ public class GameModel extends Observable{
         return to;
     }
     
+ 
     
-    public boolean init(){
+    public void init(){
         
         dbM = new DatabaseModel();
-        
-        if ((preferences = dbM.getPreference()) == null){
-            return false;
+        Boolean prevExist;
+        if ((preferences = dbM.getPreference()) != null){
+            
+            prevExist = true;
         } else
-            return true;
-        
-        
+            prevExist = false;
+        //preferences can be null
+        this.setChanged();
+        this.notifyObservers(prevExist);
+           
+       
+        //this.setChanged();
+        //this.notifyObservers(null);
+
     }
     
+   
     
     public void useDefaultSetting(boolean useDefault){
+        
         if (useDefault){
+            
             preferences = new Preferences(true);
             
+        } else if (preferences == null){
+            //has no previous 
+            //does not use default
+            out.println("shouldn't be printed");
+            preferences = new Preferences(true);
         }
         
+        //this.refreshFrame();
+        update();
+        
         this.setChanged();
+        //notify gamegui
         this.notifyObservers(preferences);
+        
     }
     
     private LinkedList<MoveableFigure> figs = new LinkedList<MoveableFigure>();
     
+    public void removeInactiveFigures(){
+        synchronized (figs){
+            Iterator<MoveableFigure> it = figs.iterator();
+
+                it.next();
+                while (it.hasNext()){
+                    MoveableFigure f = it.next();
+                    if (!f.isActive()){
+                        out.println("removed");
+                        this.numCurrentFigs--;
+                        it.remove();
+                    }
+                }
+            
+        }
+        
+    }
+    
+    public void setDim(Dimension d){
+        setFrameHeight(d.height);
+        setFrameWidth(d.width);
+        
+    }
+    
+    
+    public static void main(String args[]){
+        LinkedList<MoveableFigure> list = new LinkedList();
+        
+        Collection<MoveableFigure> c = Collections.synchronizedList(list);
+        
+        c.add(new Dinosaur(new MoveableObject()));
+        out.println(list);
+        list.remove();
+        out.println(c);
+        
+        
+    }
+    
+    
     public void refreshFrame(){
+        out.println(drawing);
+        if (!isDrawing()){
+            this.setChanged();
+            this.notifyObservers(figs);
+        }
+    }
+    public void update(){
         int frameCount = 0;
-        figs.add(new Dinosaur(new MoveableObject()));
+        setDim(preferences.getScreenDim());
+        
+        Dinosaur dino = new Dinosaur(new MoveableObject());
+        dino.addModel(this);
+        
+        figs.add(dino);
+        setChanged();
+        
+        notifyObservers(preferences);
+        
         
         while(!gameOver){
-            if (frameCount++ % spawnPeriod == 0 ){
+            this.removeInactiveFigures();
+           
                 int numValues =  MoveableTypes.values().length;
                 
                 MoveableFigure fig = MoveableTypes.values()[rand.nextInt(numValues)].getNewFigure();
+                
+                fig.addModel(this);
+                
+                figs.add(fig);
+                numCurrentFigs++;
+                
                 new Thread(fig).start();
                 
-                try {
-                    Thread.sleep(2);
+                
+            
+            
+//            out.println("drawCount = " + drawCount);
+//            out.println("numCurrent = " + this.numCurrentFigs);
+            
+//            if (drawCount == numCurrentFigs){
+//                
+//                drawCount = 0;
+//                figs.forEach(f -> {
+//                    f.setMoved(false);
+//                });
+//                
+//                setChanged();
+//                this.notifyObservers(figs);
+//            
+//            } 
+
+            //cannot say else draw = true
+            try {
+                    Thread.sleep(2000);
+                    
                 } catch (InterruptedException ex) {
                 }
                 
-            }
+            
         }
     }
     
     public void shutdown(){
         
+    }
+
+    void setCustomisedPreferences() {
     }
     
     

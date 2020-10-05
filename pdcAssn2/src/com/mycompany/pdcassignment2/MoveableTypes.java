@@ -13,13 +13,15 @@ import java.util.Random;
  */
 public enum MoveableTypes {
     
+    
     PLANT(new Plant(new MoveableObject())),
     BIRD(new Bird(new MoveableObject())),
     CLOUD(new Cloud(new MoveableObject(), new CollideableObject()));
     
+    
     private MoveableFigure f;
    
-    private MoveableTypes(MoveableFigureBaseDecorator f){
+    private MoveableTypes(MoveableFigure f){
         this.f = f;
         
     }

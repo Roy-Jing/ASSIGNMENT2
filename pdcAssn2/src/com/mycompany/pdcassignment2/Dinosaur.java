@@ -156,7 +156,7 @@ class Dinosaur extends Animal{
             {0, 1,   1, 2, 2, 3,  4, 4, 5,5,  6}
     });
        
-        this.setSymbol('*');
+       
         this.setNumPixels(11);
         
      

@@ -5,15 +5,21 @@
  */
 package com.mycompany.pdcassignment2;
 
+import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import static java.lang.System.out;
+import java.util.Observable;
 import java.util.Observer;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
+
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -31,7 +37,8 @@ import javax.swing.JTextField;
  */
 public class InitPanel extends JPanel implements Observer {
     private JButton loginButton;
-
+    private JFrame parentFrame;
+    
     public JButton getLoginButton() {
         return loginButton;
     }
@@ -47,7 +54,8 @@ public class InitPanel extends JPanel implements Observer {
     public JButton getNextButton() {
         return nextButton;
     }
-
+    
+    
     public GridBagConstraints getGbc() {
         return gbc;
     }
@@ -66,8 +74,9 @@ public class InitPanel extends JPanel implements Observer {
     private JComboBox screenDimSelection;
     private JComboBox bgSelection;
     private JButton confirmBtn;
-
+    private JPanel promptWindow;
     public JButton getConfirmBtn() {
+        
         return confirmBtn;
     }
 
@@ -93,6 +102,46 @@ public class InitPanel extends JPanel implements Observer {
     private GridBagConstraints gbc = new GridBagConstraints();
     private JScrollPane messagePane;
     private InitPanelController controller;
+    private GameModel gameModel;
+
+    public void setGameModel(GameModel gameModel) {
+        this.gameModel = gameModel;
+    }
+    
+    
+    public void askForUsingPreviousSetting(){
+        //GameModel's preferences at this point is not null.
+        this.removeAll();
+        out.println("ask for using previos");
+        
+        promptWindow = new JPanel();
+        yes.addActionListener(controller);
+        this.add(promptWindow);
+        
+        this.setLayout(new BoxLayout( this, BoxLayout.Y_AXIS));
+        
+        JLabel message = new JLabel("Previous settings exist, would you like to use them?");
+      
+        JPanel buttonPanel = new JPanel();
+        
+        buttonPanel.add(yes);
+        buttonPanel.add(no);
+        
+        yes.addActionListener(controller);
+        no.addActionListener(controller);
+        
+        promptWindow.add(message);
+        promptWindow.add(buttonPanel);
+        
+        JFrame promptWind = new JFrame();
+        add(promptWindow);
+        this.setSize(100, 100);
+        setVisible(true);
+        this.repaint();
+        this.revalidate();
+               
+    }
+    
     
     InitPanel(){
         
@@ -110,8 +159,7 @@ public class InitPanel extends JPanel implements Observer {
     public static void main(String args[]){
         //if preferences is null (non-existent0
             //bring user to preferences menu
-            //if preferences is not null
-            
+             
             
         JFrame f = new JFrame();
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -123,7 +171,7 @@ public class InitPanel extends JPanel implements Observer {
         
         GameModel gM = new GameModel();
         
-        gM.addObserver(gameGUI);
+        //gM.addObserver(gameGUI);
        // gM.addObserver(p);
         controller.addModel(gM);
         controller.addView(p);
@@ -133,9 +181,10 @@ public class InitPanel extends JPanel implements Observer {
         f.add(p);
         
         
+        gM.init();
         
-        p.dispTips();
-        f.setVisible(true);
+        //p.dispTips();
+        //f.setVisible(true);
         
         
         
@@ -195,50 +244,30 @@ public class InitPanel extends JPanel implements Observer {
         
         
     }
-    public void askForUsingDefaultSetting(){
-        JPanel prompt = new JPanel();
-        JLabel message = new JLabel("Previous settings exist, would you like to use them?");
-        Container buttonContainer = new Container();
-        
-        buttonContainer.add(yes);
-        buttonContainer.add(no);
-        prompt.add(message);
-        prompt.add(buttonContainer);
-        
-        JFrame promptWind = new JFrame();
-        promptWind.add(prompt);
-        promptWind.setVisible(true);
-        promptWind.setAlwaysOnTop(true);
+    
+    private JButton confirmSelectionBtn = new JButton("Confirm!");
+
+    public JButton getConfirmSelectionBtn() {
+        return confirmSelectionBtn;
     }
-    
-   
-    
-    public void getPreferences(){
-        confirmBtn = new JButton("Play!");
+    public void askForPreferences(){
+        removeAll();
         
-        screenDimSelection = new JComboBox();
-        screenDimSelection.addItem("100x50 (Recommended");
-        screenDimSelection.addItem("200x100");
-        screenDimSelection.addItem("400x200");
-        this.removeAll();
-        gbc.gridx = 1; gbc.gridy = 1;
+        this.setLayout(new GridLayout(2, 3));
         
-        this.add(new JLabel("Choose a screen size: "));
-        gbc.gridx = 2; gbc.gridy = 1;
+        this.add(new JLabel("Select a background colour"));
+        this.add(bgSelection);
+        
+        this.add(new JLabel("Select a screen dimension"));
         this.add(screenDimSelection);
-
-        gbc.gridx = 1; gbc.gridy = 4;
-        this.add(new JLabel("Choose a background colour: "));
-
-        gbc.gridx = 2; gbc.gridy = 4;
-         this.add(new JLabel("Choose a background colour: "));
-         
-         gbc.gridx = gbc.gridy = 5;
-        this.add(this.confirmBtn);
+        
+        this.add(this.confirmSelectionBtn);
+        
+        confirmSelectionBtn.addActionListener(controller);
         this.repaint();
         this.revalidate();
         
-
+        
     }
     public void displayError(String errMessage){
         
@@ -247,9 +276,30 @@ public class InitPanel extends JPanel implements Observer {
         
     }
 
+    public Preferences collectPreferences(){
+        Preferences collected = new Preferences(true);
+        collected.setBgColour((Color)this.bgSelection.getSelectedItem());
+     
+        collected.setScreenDim((Dimension)this.screenDimSelection.getSelectedItem());
+        
+        return collected;
+        
+    }
     @Override
-    public void update(java.util.Observable o, Object arg) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void update(Observable o, Object arg) {
+        
+        //init() in GameModel will set arg to null
+        if (arg instanceof Boolean){
+            out.println("updating initpanel");
+            
+            boolean prevExist = (boolean) arg;
+            if (!prevExist)
+                dispTips();
+             else 
+                this.askForUsingPreviousSetting();
+        }
+            
+       
     }
     
     
@@ -271,42 +321,3 @@ public class InitPanel extends JPanel implements Observer {
 
         
 }
-
-class InitPanelController implements ActionListener{
-        InitPanel p;
-        GameModel m;
-        
-        public void addView(InitPanel p){
-            this.p = p;
-        }
-        
-        public void addModel(GameModel m){
-            this.m = m;
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == p.getNextButton()){
-                p.bringToLogin();
-            } else if (e.getSource() == p.getLoginButton()){
-                
-                
-                if (m.init()){
-                    p.askForUsingDefaultSetting();
-                } else{
-                    m.useDefaultSetting(true);
-                    
-                }
-                
-            } else if (e.getSource() == p.getCreateNewUserBtn()){
-                out.println("create user");
-                
-            
-            }else if (e.getSource() == p.getYes()){
-                m.useDefaultSetting(true);
-            } else if (e.getSource() == p.getNo()){
-                m.useDefaultSetting(false);
-            }
-        }
-}
-

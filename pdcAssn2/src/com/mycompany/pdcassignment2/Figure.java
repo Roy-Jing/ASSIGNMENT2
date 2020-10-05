@@ -40,7 +40,9 @@ interface CollideableFigure extends Figure{
 
 
 interface MoveableFigure extends Figure, Runnable{
- 
+    
+    public void run();
+    
     public int getNumPixels();
 
     public void setNumPixels(int numPixels);
@@ -70,6 +72,15 @@ interface MoveableFigure extends Figure, Runnable{
     public void setOriginalForm(int[][] form);
  
     public void drawSelf(Graphics g);
+    
+    public boolean isActive();
+    
+    public void addModel(GameModel m);
+    
+    public void setMoved(boolean flag);
+    
+    public void setActive(boolean flag);
+    
 }
 
 

@@ -12,7 +12,7 @@ import java.awt.Graphics;
  *
  * @author Roy
  */
-public class Coin extends CollideableFigureBaseDecorator{
+public class Coin extends MoveableFigureBaseDecorator implements CollideableFigure{
     private int value;
    
     private Color color;
@@ -20,7 +20,7 @@ public class Coin extends CollideableFigureBaseDecorator{
     private int ovalWidth = 10;
     private int coinSize = 10;
     private int spinDir = -1;
-    Coin(CollideableFigure fig){
+    Coin(MoveableFigure fig){
         super(fig);
         color = Color.YELLOW;
         
@@ -42,8 +42,43 @@ public class Coin extends CollideableFigureBaseDecorator{
         g.setColor(color);
         
         g.fillOval(super.getCoordX(), super.getCoordY(), ovalWidth , coinSize--);
-       
+        
         spin();
+        
+    }
+
+    @Override
+    public void setRightMostCoordX(int c) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public int checkIfWillCollideWith(Dinosaur d) {
+        int[][] dinoMatrix = d.getOriginalForm();
+        
+        for (int i = 0; i < d.getNumPixels(); i++){
+            int cx = dinoMatrix[1][i];
+            
+            int cy = dinoMatrix[0][i];
+            
+            if (Math.sqrt((Math.pow((cx - this.getCoordX()), 2.0) +
+                    (Math.pow((cy - this.getCoordY()), 2.0)))) < (coinSize / 2)){
+                GameModel.addCoins();
+                this.setActive(false);
+                
+            }
+        }
+        
+        return d.getVelocityY();
+    }
+
+    @Override
+    public boolean willIntersect(int feetLocationY, int dVelocityY) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void adjustVelocity(Dinosaur d, int vY) {
         
     }
     

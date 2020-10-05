@@ -23,6 +23,9 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Run
         return figure.getSymbol();
     }
     
+    public boolean isActive(){
+        return figure.isActive();
+    }
     public void run(){
         new Thread(figure).start();
     }
@@ -32,9 +35,16 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Run
         figure.setSymbol(symbol);
     }
     
+    public void setMoved(boolean flag){
+        figure.setMoved(flag);
+    }
     MoveableFigureBaseDecorator(MoveableFigure f){
         figure = f;
     }
+    
+     public void setActive(boolean flag){
+         figure.setActive(flag);
+     }
     
     @Override
     public MoveableFigure getNewFigure(){
@@ -107,6 +117,9 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Run
     }
     
    
+    public void addModel(GameModel m){
+        figure.addModel(m);
+    }
     @Override
     public void setAltForm(int[][] altForm) {
         figure.setAltForm(altForm);

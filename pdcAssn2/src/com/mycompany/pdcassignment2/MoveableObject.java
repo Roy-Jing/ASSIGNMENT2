@@ -27,19 +27,19 @@ import java.util.logging.Logger;
  * a MoveableObject, conforming to the decorator design pattern.
  * @author Roy
  */
-public class MoveableObject extends Observable implements MoveableFigure{
+public class MoveableObject extends Observable implements MoveableFigure, Runnable{
     
     private volatile boolean active = true;
     private boolean changeToAltForm = true;
     private int velocityX;
     private int velocityY = 0;
     
-    private GameGUI view;
-    
+ 
+    private GameModel model;
     private int numPixels;
     private int coordX;
     private int coordY;
-    private Graphics graphics;
+ 
     
     //Definition of a symbol:
     /*A group of them together represents the on-screen appearance of a 
@@ -128,7 +128,10 @@ public class MoveableObject extends Observable implements MoveableFigure{
         this.velocityX = v;
     }
 
-   
+    
+    public void addModel(GameModel mod){
+        model = mod;
+    }
     @Override
     public int getRightMostCoordX() {
         //the coord furthest to the right in the matrix will be the right most coord.
@@ -165,34 +168,58 @@ public class MoveableObject extends Observable implements MoveableFigure{
     public void drawSelf(Graphics g) {
         int[][] form0 = GameModel.copy(this.getOriginalForm());
         
-        for (int[] row : form0){
-            for (int index : row){
-                g.drawRect(coordX, coordY, GameModel.getPixelSize(), GameModel.getPixelSize());
-                
-            }
+        for (int i = 0; i < form0[0].length; i++){
+            g.drawRect(coordX + form0[0][i], coordY + form0[1][i], GameModel.getPixelSize(), GameModel.getPixelSize());
+
         }
         
     }
     
+   
+    public boolean isActive(){
+        return active;
+    }
+    
+    private volatile boolean moved = false;
+    
+    public void setMoved(boolean flag){
+        moved = flag;
+    }
+    
+ 
     @Override
     public void run() {
+        
+        out.println("started");
        while(active){
-           this.setCoordX(coordX + this.getVelocityX());
-           this.setCoordY(coordY + this.getVelocityY());
-           synchronized (this){
-                if (GameModel.getDrawCount() != 0){
-                    try {
-                        Thread.currentThread().wait();
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(MoveableObject.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }else{
-                    notify();
+           //out.println("still active and moved = " + moved);
+           
+           if (!moved){
+                if (stillWithinFrame()){
+                    out.println("still within frame");
+                    
+                     this.setCoordX(coordX + this.getVelocityX());
+                     this.setCoordY(coordY + this.getVelocityY());
+                     moved = true;
+                     
+                     model.refreshFrame();
+                    // model.update();
+                    // model.notifyObservers(null);
+                     //model.updateCount();
+                     
+                } else{
+                    out.println("not in frame");
+                    
+                    model.setNumCurrentFigs(model.getNumCurrentFigs() - 1);
+                    active = false;
+                    
                 }
            }
-           
-           
+
        }
+       
+       out.println("is active: " + active);
+       
        
        
     }
@@ -205,6 +232,11 @@ public class MoveableObject extends Observable implements MoveableFigure{
     @Override
     public void setSymbol(char c) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setActive(boolean flag) {
+        active = flag;
     }
     
     
