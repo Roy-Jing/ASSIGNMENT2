@@ -27,21 +27,18 @@ public class Bird extends Animal{
        setCoordY(GameModel.getFrameHeight() - 8);
        setNumPixels(this.getAltForm()[0].length);
        this.setVelocityX(-2);
+       
      
     }
     
     //for the meaning of the method please see the enum class MoveableTypes
     @Override
      public Bird getNewFigure(){
-        return new Bird(new MoveableObject());
+        return new Bird(new MoveableObject("Bird"));
     } 
    
 
-    public void run(){
-        while (super.getRightMostCoordX() >= 0){
-            
-        }
-    }
+   
  
     
     

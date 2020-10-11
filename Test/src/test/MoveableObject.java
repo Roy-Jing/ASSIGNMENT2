@@ -3,7 +3,6 @@ package com.mycompany.pdcassignment2;
 
 
 
-import java.awt.Color;
 import java.awt.Graphics;
 import static java.lang.System.out;
 import java.util.Observable;
@@ -28,21 +27,20 @@ import java.util.logging.Logger;
  * a MoveableObject, conforming to the decorator design pattern.
  * @author Roy
  */
-public class MoveableObject implements MoveableFigure, Runnable{
+public class MoveableObject extends Observable implements MoveableFigure, Runnable{
     
     private volatile boolean active = true;
     private boolean changeToAltForm = true;
     private int velocityX;
     private int velocityY = 0;
-       
+    
+ 
     private GameModel model;
     private int numPixels;
     private int coordX;
     private int coordY;
  
-    MoveableObject(String id){
-        this.setName(id);
-    }
+    
     //Definition of a symbol:
     /*A group of them together represents the on-screen appearance of a 
     particular MoveableFigure. How the group is arranged is defined by the figure's altForm
@@ -129,13 +127,8 @@ public class MoveableObject implements MoveableFigure, Runnable{
     public void setVelocityX(int v){
         this.velocityX = v;
     }
+
     
-    
-    public void move(){
-        coordX += velocityX;
-        coordY += velocityY;
-        
-    }
     public void addModel(GameModel mod){
         model = mod;
     }
@@ -170,30 +163,15 @@ public class MoveableObject implements MoveableFigure, Runnable{
         return null;
     }
     
-    private String id;
-    public void setName(String name){
-        id = name;
-    }
-    
-    private Color selfColour;
     
     @Override
     public void drawSelf(Graphics g) {
+        int[][] form0 = GameModel.copy(this.getOriginalForm());
         
-        //g.setColor(this.color);
-        int[][] form0 = this.getOriginalForm();
-        int pxSize = GameModel.getPixelSize();
-        
-        
-     //   g.drawString(id, coordX, coordY);
-        for (int i = 0; i < numPixels; i++){
-            //g.drawRect(pxSize * form0[1][i], pxSize * (form0[0][i]), model.getPixelSize(), model.getPixelSize());
-            g.drawRect(pxSize * (coordX + form0[1][i]), pxSize * (coordY + form0[0][i]), model.getPixelSize(), model.getPixelSize());
-        
-        
+        for (int i = 0; i < form0[0].length; i++){
+            g.drawRect(coordX + form0[0][i], coordY + form0[1][i], GameModel.getPixelSize(), GameModel.getPixelSize());
+
         }
-        
-        
         
     }
     
@@ -202,65 +180,11 @@ public class MoveableObject implements MoveableFigure, Runnable{
         return active;
     }
     
-    private CollisionHandler handler;
-    
     private volatile boolean moved = false;
     
     public void setMoved(boolean flag){
         moved = flag;
     }
-    
-   
-    private boolean canMovebody = false;
-
-    public boolean isCanMovebody() {
-        return canMovebody;
-    }
-
-    public void setCanMovebody(boolean canMovebody) {
-        this.canMovebody = canMovebody;
-    }
-    
-    
-    public void setCollisionHandler(CollisionHandler handler){
-        this.handler = handler;
-        
-    }
-    public void doRun(){
-        model.refreshFrame();
-           if (!moved){
-                if (stillWithinFrame()){
-                    try {
-                        int velAdjusted;
-                        
-                        if (handler.checkForCollision()){
-                            handler.handleCollision();
-                            
-                            model.setGameOver(true);
-                            return;
-                        }
-                        move();
-                        moved = true;
-                        Thread.sleep(100);
-                        
-                        // model.notifyObservers(null);
-                        
-                    } catch (InterruptedException ex) {
-                        
-                    }
-                     
-                } else{
-                    out.println("not in frame");
-                    
-                    //model.setNumCurrentFigs(model.getNumCurrentFigs() - 1);
-                    active = false;
-                    
-                }
-           }
-
-       }
-       
-       
     
  
     @Override
@@ -268,9 +192,34 @@ public class MoveableObject implements MoveableFigure, Runnable{
         
         out.println("started");
        while(active){
-           doRun();
-       }//out.println("still active and moved = " + moved);
+           //out.println("still active and moved = " + moved);
            
+           if (!moved){
+                if (stillWithinFrame()){
+                    out.println("still within frame");
+                    
+                     this.setCoordX(coordX + this.getVelocityX());
+                     this.setCoordY(coordY + this.getVelocityY());
+                     moved = true;
+                     
+                     model.refreshFrame();
+                    // model.update();
+                    // model.notifyObservers(null);
+                     //model.updateCount();
+                     
+                } else{
+                    out.println("not in frame");
+                    
+                    model.setNumCurrentFigs(model.getNumCurrentFigs() - 1);
+                    active = false;
+                    
+                }
+           }
+
+       }
+       
+       out.println("is active: " + active);
+       
        
        
     }
@@ -291,12 +240,11 @@ public class MoveableObject implements MoveableFigure, Runnable{
     }
     
     
-    
+   
 
    
 }
 
-//class CollisionHandler
 
 
 

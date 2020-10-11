@@ -20,7 +20,7 @@ public class Plant extends MoveableFigureBaseDecorator{
        });
        
        this.setAltForm(this.getOriginalForm());
-       
+      
        setCoordX(GameModel.getFrameWidth() + 5);
        setCoordY(GameModel.getFrameHeight() - 3); //centre is the mid point
        
@@ -28,8 +28,9 @@ public class Plant extends MoveableFigureBaseDecorator{
     
     @Override
     public MoveableFigure getNewFigure(){
-        return new Plant(new MoveableObject());
+        return new Plant(new MoveableObject("Plant"));
     }
-   
+
+  
   
 }

@@ -41,7 +41,7 @@ class InitPanelController implements ActionListener{
             } else if (src == p.getLoginButton()){
                 
                 
-                m.init();
+                //m.init();
                 p.askForUsingPreviousSetting();
                 
             } else if (src == p.getCreateNewUserBtn()){
@@ -56,17 +56,20 @@ class InitPanelController implements ActionListener{
                 
                
             } else if (src == p.getNo()){
-                m.getPreferences();
-                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
+                p.askForPreferences();
+                //JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
 
-                topFrame.dispose();
+                //topFrame.dispose();
                 //parent.dispatchEvent(new WindowEvent(parent, WindowEvent.WINDOW_CLOSING));
 
             } else if (src == p.getConfirmSelectionBtn()){
-                
+                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
+
+                topFrame.dispose();
                 m.setPreferences(p.collectPreferences());
                 m.useDefaultSetting(false);
             }
+            
         }
         
         

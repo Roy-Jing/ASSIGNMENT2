@@ -22,26 +22,20 @@ public interface Figure {
     public int getCoordY();
     
     public void setCoordY(int c);
-  
+    
+    public void setCollisionHandler(CollisionHandler handler);
+    
 }
 
 
 interface CollideableFigure extends Figure{
     
     public void setRightMostCoordX(int c);
-    
-    public int checkIfWillCollideWith(Dinosaur d);
-    
-    public boolean willIntersect(int feetLocationY, int dVelocityY);
-     
-    public void adjustVelocity(Dinosaur d, int vY);
-   
+        
 }
 
 
 interface MoveableFigure extends Figure, Runnable{
-    
-    public void run();
     
     public int getNumPixels();
 
@@ -76,6 +70,9 @@ interface MoveableFigure extends Figure, Runnable{
     public boolean isActive();
     
     public void addModel(GameModel m);
+    
+    public void doRun();
+    
     
     public void setMoved(boolean flag);
     

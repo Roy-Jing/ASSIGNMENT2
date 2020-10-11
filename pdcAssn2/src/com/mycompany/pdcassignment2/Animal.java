@@ -1,12 +1,13 @@
   package com.mycompany.pdcassignment2;
 
+import java.awt.Graphics;
+
 public abstract class Animal extends MoveableFigureBaseDecorator{   
     
     
     Animal(MoveableFigure f){
         
         super(f);
-
         
     }
     
@@ -26,6 +27,19 @@ public abstract class Animal extends MoveableFigureBaseDecorator{
         this.setAltForm(tempForm);
         
     }
+    
+    public void doRun(){
+        super.doRun();
+        movePart();
+            
+        
+    }
+    public void run(){
+        while (super.isActive()){
+            doRun();
+        }
+    }
+  
     
     
 

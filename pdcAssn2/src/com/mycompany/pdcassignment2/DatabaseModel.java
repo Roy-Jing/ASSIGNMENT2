@@ -281,6 +281,22 @@ class Data{
 class Preferences{
     private Dimension screenDim;
     private Color bgColour;
+    private String diffLevel;
+    
+    public String getDifficulty(){
+        return diffLevel;
+    }
+    public void setDifficulty(String d){
+        diffLevel = d;
+    }
+    public String getDiffLevel() {
+        return diffLevel;
+    }
+
+    public void setDiffLevel(String diffLevel) {
+        this.diffLevel = diffLevel;
+    }
+    
     
     public Preferences(boolean useDefault){
         if (useDefault){

@@ -10,27 +10,24 @@ import java.awt.Graphics;
  */
 public abstract class CollideableFigureBaseDecorator implements CollideableFigure {
     private CollideableFigure figure;
+    private Dinosaur d;
+    
     
     CollideableFigureBaseDecorator(CollideableFigure f){
         figure = f;
+        this.setCollisionHandler(new CollideableCollisionHandler(figure));
     }
 
-    
+    public void setCollisionHandler(CollisionHandler handler){
+        figure.setCollisionHandler(handler);
+    }
     
     
     @Override
     public void setRightMostCoordX(int rightMostCoordX) {
         figure.setRightMostCoordX(rightMostCoordX);
     }
-    
-    @Override
-    public void adjustVelocity(Dinosaur d, int adjustedVelocity){
-        //out.println("velocity adjusting\n\n\n\n");
-        
-        figure.adjustVelocity(d, adjustedVelocity);
-      
-    }
-    
+   
     @Override
     public void setCoordY(int c) {
         figure.setCoordY(c);
@@ -54,16 +51,5 @@ public abstract class CollideableFigureBaseDecorator implements CollideableFigur
     public void setCoordX(int c) {
         figure.setCoordX(c);
     }
-
-    @Override
-    public int checkIfWillCollideWith(Dinosaur d){
-        return figure.checkIfWillCollideWith(d);
-    }
-    
-    @Override
-     public boolean willIntersect( int feetLocationY, int dVelocityY){
-         return figure.willIntersect( feetLocationY, dVelocityY);
-     }
-   
 
 }

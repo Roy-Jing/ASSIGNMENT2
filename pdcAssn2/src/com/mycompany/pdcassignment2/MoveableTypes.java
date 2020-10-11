@@ -14,9 +14,9 @@ import java.util.Random;
 public enum MoveableTypes {
     
     
-    PLANT(new Plant(new MoveableObject())),
-    BIRD(new Bird(new MoveableObject())),
-    CLOUD(new Cloud(new MoveableObject(), new CollideableObject()));
+    PLANT(new Plant(new MoveableObject("PLANT"))),
+    BIRD(new Bird(new MoveableObject("BIRD"))),
+    CLOUD(new Cloud(new MoveableObject("CLOUD")));
     
     
     private MoveableFigure f;

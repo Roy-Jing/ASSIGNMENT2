@@ -89,20 +89,86 @@ class Dinosaur extends Animal{
         }
     }
     
+    public void movePart(){
+        if (this.shouldMovePart){
+            super.movePart();
+        } 
+    }
     public void moveForward(){
         
     }
     
     public void jump(){
-        isJumping = true;
         
-    }
-    
-    public void hunch(){
-        
+        this.setVelocityY(this.getVelocityY() + 1);
     }
     
     
+    public void updateVirtualGUI(){
+        int velocityX = this.getVelocityX();
+        int velocityY = this.getVelocityY();
+        int startPos = 0, shiftDir = 0, endPos = 0;
+        
+       if (velocityX > 0 || velocityY > 0){
+           startPos = getNumPixels() - 1;
+           shiftDir = -1;
+           endPos = -1;
+       } else if (velocityX <= 0 || velocityY < 0){
+           startPos = 0;
+           shiftDir = 1;
+           endPos = getNumPixels();
+           
+       } 
+        if (this.getVelocityX() != 0 || this.getVelocityY() !=0){
+            char[][] virtualGUI = GameModel.getVirtualGUI();
+            
+            for (int i = startPos; i != endPos; i+= shiftDir){
+                int coordY = this.getOriginalForm()[0][i];
+                int coordX = this.getOriginalForm()[1][i];
+                
+                virtualGUI[coordY][coordX] =  ' ';
+                virtualGUI[coordY + velocityY][coordX + velocityX] = '!';
+               
+            }
+            
+        }
+        
+    }
+    public void run(){
+       doRun();
+        
+    }
+    
+    public void hunch(boolean toHunch){
+        int[][] original = this.getOriginalForm();
+        int[][] alt = this.getAltForm();
+        
+        if (toHunch && !previouslyHunched){
+            super.getAltForm()[0][neckIndexX1]      =        
+                super.getAltForm()[0][neckIndexX2]      =  
+                super.getOriginalForm()[0][neckIndexX1] =        
+                super.getOriginalForm()[0][neckIndexX2] =  1;
+                
+                previouslyHunched = true;
+        } else if (!toHunch && previouslyHunched){
+            
+                super.getAltForm()[0][neckIndexX1]      =     
+                super.getOriginalForm()[0][neckIndexX1] = 0;
+                super.getAltForm()[0][neckIndexX2]      =     -1;  
+                super.getOriginalForm()[0][neckIndexX2] =     -1; 
+                
+                previouslyHunched = false;
+        }
+    }
+    
+    public void doRun(){
+        super.doRun();
+        if (isJumping){
+            this.setVelocityY(getVelocityY() + 1);
+            
+        }
+    }
+            
     
     /**
      * The stillWithinFrame method will adjust a MoveableFigure's
@@ -154,7 +220,7 @@ class Dinosaur extends Animal{
             //last is feet
             //x
             {0, 1,   1, 2, 2, 3,  4, 4, 5,5,  6}
-    });
+        });
        
        
         this.setNumPixels(11);
@@ -190,80 +256,6 @@ class Dinosaur extends Animal{
     }
 
     
-    
-
-    
-    
-    //need to override the refreshrameMatrix method to allow for moevements
-    //like hunching.
-    
-  
-    @Override
-    public void movePart(){
-        
-        //The Dinosaur shall only move if it's feet are directly above something and
-        //that its velocity in the Y direction is 0. Note the former condition must be checked
-        //against because we can run into situations where dinosaur is at the top most
-        //of its parabolic trajectory (so is still jumping) and yet has its velocityY set to
-        //0, in the case, we don't want the dinosaur to movePart().
-        if (shouldMovePart){
-            super.movePart();
-        } 
-   
-        
-    }
-
-    public boolean isShouldMovePart() {
-        return shouldMovePart;
-    }
-
-    public void setShouldMovePart(boolean shouldMovePart) {
-        this.shouldMovePart = shouldMovePart;
-    }
-    
-   
-   
-   
-    //The hunch method. Hunches the dinosaur by adjusting some
-    //numbers in its coordinate matrix.
-    //So next time Game.printScr() is called, the dinosaur figure will look
-    //hunched
-    public void hunch(boolean toHunch){
-       //if un-hunching is desired and the dinosaur is not previously hucnched, then
-       //get the dinosaur to hunch. 
-        if (!toHunch && previouslyHunched){
-       
-                //modifying the dinosaur's originalForm and altForm to
-                //update its appearance.
-                //Note the use of super. Because in this class, the getAltForm 
-                //method is overriden (due to the need from logic), to actually get the
-                //altForm, we shall call the super.getAltForm method to obtain the altForm.
-                
-                super.getAltForm()[0][neckIndexX1]      =     
-                super.getOriginalForm()[0][neckIndexX1] = 0;
-                super.getAltForm()[0][neckIndexX2]      =     -1;  
-                super.getOriginalForm()[0][neckIndexX2] =     -1; 
-                
-                previouslyHunched = false;
-                
-        //if hunching is desired, and the dinosaur is previously hunched, then get the
-        //dinosaur to unhunch.
-        } else if (toHunch && !previouslyHunched){
-           
-                super.getAltForm()[0][neckIndexX1]      =        
-                super.getAltForm()[0][neckIndexX2]      =  
-                super.getOriginalForm()[0][neckIndexX1] =        
-                super.getOriginalForm()[0][neckIndexX2] =  1;
-                
-                previouslyHunched = true;
-              
-        }
-
-       
-    }
-    
-   
-    
     public void sprintForward(){
         setVelocityX(this.getVelocityX() + 1);
     }
@@ -271,12 +263,16 @@ class Dinosaur extends Animal{
     public void sprintBackward(){
         setVelocityX(this.getVelocityX() - 1);
     }
-    
-    public void drawSelf(Graphics g){
-        if (isJumping){
-            
-        }
+
+    void setShouldMovePart(boolean b) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    void isJumping(boolean b) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+   
 
 
         

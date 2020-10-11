@@ -19,13 +19,23 @@ public class Coin extends MoveableFigureBaseDecorator implements CollideableFigu
     private boolean isCollected = false;
     private int ovalWidth = 10;
     private int coinSize = 10;
+
+    public int getCoinSize() {
+        return coinSize;
+    }
     private int spinDir = -1;
     Coin(MoveableFigure fig){
         super(fig);
+        figure.setCollisionHandler(new CoinCollisionHandler(figure));
         color = Color.YELLOW;
         
     }
     
+    public void handleCollision(){
+        this.setActive(false);
+        GameModel.addCoin();
+        this.setActive(false);
+    }
     public void spin(){
         if (ovalWidth == 1){
             spinDir = 1;
@@ -52,35 +62,34 @@ public class Coin extends MoveableFigureBaseDecorator implements CollideableFigu
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public int checkIfWillCollideWith(Dinosaur d) {
-        int[][] dinoMatrix = d.getOriginalForm();
+    
+
+   
+    
+}
+
+class CoinCollisionHandler extends CollideableCollisionHandler{
+    
+    CoinCollisionHandler(Figure f){
+        super(f);
+    }
+    public void handleCollision(){
         
-        for (int i = 0; i < d.getNumPixels(); i++){
+    }
+    public boolean checkForCollision() {
+        int[][] dinoMatrix = dino.getOriginalForm();
+        
+        for (int i = 0; i < dino.getNumPixels(); i++){
             int cx = dinoMatrix[1][i];
             
             int cy = dinoMatrix[0][i];
             
-            if (Math.sqrt((Math.pow((cx - this.getCoordX()), 2.0) +
-                    (Math.pow((cy - this.getCoordY()), 2.0)))) < (coinSize / 2)){
-                GameModel.addCoins();
-                this.setActive(false);
-                
+            if (Math.sqrt((Math.pow((cx - self.getCoordX()), 2.0) +
+                    (Math.pow((cy - self.getCoordY()), 2.0)))) < (((Coin) self).getCoinSize() / 2)){
+                return true;
             }
         }
         
-        return d.getVelocityY();
+        return false;
     }
-
-    @Override
-    public boolean willIntersect(int feetLocationY, int dVelocityY) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void adjustVelocity(Dinosaur d, int vY) {
-        
-    }
-    
-    
 }

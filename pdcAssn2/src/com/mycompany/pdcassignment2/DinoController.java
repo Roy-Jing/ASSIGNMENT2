@@ -14,36 +14,135 @@ import java.awt.event.KeyListener;
  */
 public class DinoController implements KeyListener {
 
-    private Dinosaur dino;
-    private boolean isJumping = false;
+    public static boolean isJumping() {
+        return dino.isJumping();
+        
+    }
+    
+    DinoController(Dinosaur d){
+        dino = d;
+    }
+
+    private static Dinosaur dino;
+    private boolean keyHit = false;
     @Override
     public void keyTyped(KeyEvent e) {
     }
 
-    public void addDino(Dinosaur dino){
-        this.dino = dino;
-    }
+   
     @Override
     public void keyPressed(KeyEvent e) {
+         
+        if (!keyHit){
+            char key = e.getKeyChar();
+            
+            switch (key) {
+                case 'w':
+                    //out.print("w pressedw pressedw pressedw pressedw pressedw pressedw pressedw pressedw pressedw pressedw pressed");
+                    keyHit = true;
+                    dino.setVelocityY(-4);
+                    dino.setLanded(false);
+                    
+                    if (dino.isHunched()){
+                        dino.hunch(false);
+                        
+                        dino.setPreviouslyHunched(true);
+                    }
+                    dino.setAccelerated(false);
+                    dino.setVelocityX(0);
+                    //dino.jump();
+                    
+                    //System.out.println("w pressed");
+                    
+                    //dino.setLanded(false);
+                    break;
+                    
+               
+                    
+                case 'a':
+                        
+                        if (!dino.isAccelerated()){
+                           
+                                dino.setAccelerated(true);
+                                dino.setVelocityX(dino.getVelocityX() - 1);
+          
+                        } 
+                   
+                       break;
+                case 's':
+                    //out.print("Dino is hunched: " + dino.isHunched());
+                    if (!(dino.isHunched())){
+                        
+                        //out.print("hunching");
+                        //dino.hunch(true);
+                        dino.setHunched(true);
+                        
+                    } break;
+                    
+                case 'd':
+                   
+                        if (!dino.isAccelerated()){
+                            
+                            
+                               //out.print("accelerating");
+                               dino.setVelocityX(dino.getVelocityX() + 1);
+                               
+                                   dino.setAccelerated(true);
+                        } 
+                        break;
+                   
+                default:
+                    break;
+            } //setKeyHit(true); 
+            
+            }
+        
+       
+        }
+   
+    @Override
+    public void keyReleased(KeyEvent e){
+        
         char key = e.getKeyChar();
         
-        if (key == 'a'){
-            dino.moveBackward();
+        if (key == 's')
             
-        } else if (key == 'w'){
-            dino.jump();
+            dino.setHunched(false);
             
-        } else if (key == 's'){
-            dino.hunch();
-            
-        } else{
-            dino.moveForward();
-        }
-    }
+         else if (key != 'w' ){
+             
+                if (dino.getFeetLocationY() == GameModel.getFrameHeight() - 2 ){
+                    
+                    //releasing the key 'a' when the dinosaur is on the Floor
+                    //must mean that dinosaur's shouldMovePart flag must have been set
+                    //to false previously when a is PRESSED. So should reset 
+                    //shouldMovePart to true.
+                    if (key == 'a')
+                        
+                        dino.setShouldMovePart(true);
+                    
+                    //no need to test if 'd' is pressed
+                    //as pressing d will not set shouldmovepart to false
+                } else{
+                    //original should be the same as alt because on cloud
+                    dino.setShouldMovePart(false);
+                }
+                
+                if (dino.isAccelerated()){
+                    
+                    dino.setAccelerated(false);
+                    if (key == 'a')
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                        dino.setVelocityX(dino.getVelocityX() + 1);
+
+                    else
+                        
+                        dino.setVelocityX(dino.getVelocityX() - 1);
+                }
+               
+        }
+        
     }
+  
     
 }

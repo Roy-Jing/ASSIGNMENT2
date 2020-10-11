@@ -10,6 +10,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import static java.lang.System.out;
 import java.util.LinkedList;
 import java.util.Observable;
@@ -29,24 +32,31 @@ import javax.swing.Timer;
  *
  * @author Roy
  */
-public class GameGUI extends JPanel implements Observer {
-    private JLabel currentScore;
-    private JDialog userInfoPane;
-    private Graphics graphics;
+public class GameGUI extends JPanel implements Observer, WindowListener {
+
     private boolean running = false;
-    private JPanel promptWindow;
-    private JButton yes, no;
+    private DinoController dinoControl;
+    private GameModel model;
+    
+    
+    public void setModel(GameModel model) {
+        this.model = model;
+    }
+    
+    public DinoController getDinoControl() {
+        return dinoControl;
+    }
+
+    public void setDinoControl(DinoController dinoControl) {
+        this.dinoControl = dinoControl;
+    }
     
     private Color bgColor;
     private Dimension screenDim;
-    private JFrame frame;
+   // private JFrame frame;
     private LinkedList<MoveableFigure> tempFigs;
-    private GameController preferenceController;
     
-    GameGUI(){
-        frame = new JFrame();
-    }
-    
+  
     
     
    
@@ -57,12 +67,14 @@ public class GameGUI extends JPanel implements Observer {
     
     
     
+    @Override
     public void paintComponent(Graphics g){
-        GameModel.setDrawing(true);
+        out.println("inside paintComp");
+     
         super.paintComponent(g);
         
         out.println("drawing");
-        
+
         if (tempFigs != null){
             out.println("drawing self");
             
@@ -70,11 +82,12 @@ public class GameGUI extends JPanel implements Observer {
                 fig.drawSelf(g);
             });
             
+            GameModel.setDrawing(false);
         } else 
             out.println("temFigs is null");
         
         //g.drawString(currentScore.toString(), 0, 0);
-        GameModel.setDrawing(false);
+        
         
     }
     
@@ -85,15 +98,23 @@ public class GameGUI extends JPanel implements Observer {
         if (arg instanceof Preferences){
             
             out.println("GameGUI notified");
-            
+
             bgColor = ((Preferences) arg).getBgColour();
             screenDim = ((Preferences) arg).getScreenDim();
             
             this.setBackground(bgColor);
-            frame.setSize(500, 500);
-            frame.add(this);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setVisible(true);
+           // frame.setPreferredSize(screenDim);
+            //frame.setContentPane(this);
+            //frame.setContentPane(this);
+            
+            //frame.setVisible(true);
+            
+           // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            repaint();
+           
+            //frame.setVisible(true);
+           // frame.pack();
+            
             out.println("set visible");
             
         } else if (arg instanceof LinkedList){
@@ -101,17 +122,55 @@ public class GameGUI extends JPanel implements Observer {
             out.println("refreshing frame");
             
             repaint();
+            
+            //revalidate();
             out.println("after calling repaint");
             
+        } else if (arg instanceof Dinosaur){
+            this.addKeyListener(new DinoController((Dinosaur) arg));
         }
     }
     
+    public void windowClosed(WindowEvent e){
+        
+    }
+
+    @Override
+    public void windowOpened(WindowEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
    
 
    
     
 }
+
 
 
 

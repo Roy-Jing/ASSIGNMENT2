@@ -23,6 +23,10 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Run
         return figure.getSymbol();
     }
     
+    public void setCollisionHandler(CollisionHandler handler){
+        figure.setCollisionHandler(handler);
+    }
+    
     public boolean isActive(){
         return figure.isActive();
     }
@@ -40,6 +44,11 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Run
     }
     MoveableFigureBaseDecorator(MoveableFigure f){
         figure = f;
+        this.setCollisionHandler(new MoveableCollisionHandler(figure));
+    }
+    
+    public void doRun(){
+        figure.doRun();
     }
     
      public void setActive(boolean flag){
@@ -141,6 +150,7 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Run
         figure.drawSelf(g);
     }
     
+   
     
 }
 

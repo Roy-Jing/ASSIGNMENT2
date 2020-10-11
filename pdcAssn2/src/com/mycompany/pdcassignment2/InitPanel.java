@@ -38,6 +38,7 @@ import javax.swing.JTextField;
 public class InitPanel extends JPanel implements Observer {
     private JButton loginButton;
     private JFrame parentFrame;
+    private JComboBox diffSelection;
     
     public JButton getLoginButton() {
         return loginButton;
@@ -114,9 +115,9 @@ public class InitPanel extends JPanel implements Observer {
         this.removeAll();
         out.println("ask for using previos");
         
-        promptWindow = new JPanel();
+        //promptWindow = new JPanel();
         yes.addActionListener(controller);
-        this.add(promptWindow);
+        //this.add(promptWindow);
         
         this.setLayout(new BoxLayout( this, BoxLayout.Y_AXIS));
         
@@ -130,13 +131,14 @@ public class InitPanel extends JPanel implements Observer {
         yes.addActionListener(controller);
         no.addActionListener(controller);
         
-        promptWindow.add(message);
-        promptWindow.add(buttonPanel);
+        add(message);
+        add(buttonPanel);
+        //parentFrame.add(promptWindow);
         
-        JFrame promptWind = new JFrame();
-        add(promptWindow);
+        //JFrame promptWind = new JFrame();
+        //add(promptWindow);
         this.setSize(100, 100);
-        setVisible(true);
+        //setVisible(true);
         this.repaint();
         this.revalidate();
                
@@ -160,9 +162,9 @@ public class InitPanel extends JPanel implements Observer {
         //if preferences is null (non-existent0
             //bring user to preferences menu
              
-            
-        JFrame f = new JFrame();
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+          
+        //JFrame f = new JFrame();
+        //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         InitPanel p = new InitPanel();
         
         
@@ -170,15 +172,19 @@ public class InitPanel extends JPanel implements Observer {
         GameGUI gameGUI = new GameGUI();
         
         GameModel gM = new GameModel();
+      
         
-        //gM.addObserver(gameGUI);
-       // gM.addObserver(p);
+        JFrame GUIFrame = new JFrame("Main game");
+        
+        gM.addObserver(p);
         controller.addModel(gM);
         controller.addView(p);
+        GUIFrame.getContentPane().add(gameGUI);
+        GUIFrame.setVisible(true);
         
         p.addController(controller);
-     
-        f.add(p);
+        gM.addObserver(gameGUI);
+        //f.add(p);
         
         
         gM.init();
@@ -242,7 +248,6 @@ public class InitPanel extends JPanel implements Observer {
         gbc.gridx = gbc.gridy = 2;
         add(nextButton);
         
-        
     }
     
     private JButton confirmSelectionBtn = new JButton("Confirm!");
@@ -251,9 +256,24 @@ public class InitPanel extends JPanel implements Observer {
         return confirmSelectionBtn;
     }
     public void askForPreferences(){
-        removeAll();
+        diffSelection = new JComboBox();
         
-        this.setLayout(new GridLayout(2, 3));
+        bgSelection = new JComboBox();
+        this.screenDimSelection = new JComboBox();
+        
+        bgSelection.addItem(Color.WHITE);
+        bgSelection.addItem(Color.GREEN);
+        bgSelection.setSelectedIndex(0);
+        this.screenDimSelection.addItem(new Dimension(100, 50));
+                this.screenDimSelection.addItem(new Dimension(200, 100));;
+                this.screenDimSelection.addItem(new Dimension(250, 100));
+        screenDimSelection.setSelectedIndex(0);
+        removeAll();
+        diffSelection.addItem("Easy");
+        diffSelection.addItem("Medium");
+        diffSelection.addItem("Hard");
+        
+        this.setLayout(new GridLayout(2, 4));
         
         this.add(new JLabel("Select a background colour"));
         this.add(bgSelection);
@@ -262,6 +282,10 @@ public class InitPanel extends JPanel implements Observer {
         this.add(screenDimSelection);
         
         this.add(this.confirmSelectionBtn);
+        
+        this.add(new JLabel("Select a difficulty"));
+        this.add(diffSelection);
+        
         
         confirmSelectionBtn.addActionListener(controller);
         this.repaint();
@@ -279,7 +303,8 @@ public class InitPanel extends JPanel implements Observer {
     public Preferences collectPreferences(){
         Preferences collected = new Preferences(true);
         collected.setBgColour((Color)this.bgSelection.getSelectedItem());
-     
+        //collected.setDifficulty(diffSelection.getSelectedItem());
+        
         collected.setScreenDim((Dimension)this.screenDimSelection.getSelectedItem());
         
         return collected;
@@ -290,6 +315,10 @@ public class InitPanel extends JPanel implements Observer {
         
         //init() in GameModel will set arg to null
         if (arg instanceof Boolean){
+            this.parentFrame = new JFrame("Init Panel");
+            parentFrame.add(this);
+            parentFrame.setVisible(true);
+            
             out.println("updating initpanel");
             
             boolean prevExist = (boolean) arg;
@@ -311,7 +340,7 @@ public class InitPanel extends JPanel implements Observer {
 
         add(getLoginButton());
         out.println(controller);
-        getLoginButton().addActionListener(controller);
+        loginButton.addActionListener(controller);
         
         repaint();
         revalidate();
@@ -321,3 +350,4 @@ public class InitPanel extends JPanel implements Observer {
 
         
 }
+
