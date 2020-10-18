@@ -5,6 +5,8 @@
  */
 package com.mycompany.pdcassignment2;
 
+import static java.lang.System.out;
+
 /**
  *
  * @author Roy
@@ -16,27 +18,34 @@ public class MoveableCollisionHandler extends CollisionHandler<MoveableFigure>{
         
     }
     
+    
+    @Override
     public boolean checkForCollision(){
+            if (! (self instanceof Dinosaur)){
             char[][] virtualGUI = GameModel.getVirtualGUI();
             
             int[][] selfCoords = self.getOriginalForm();
           
             for (int i = 0; i < self.getNumPixels(); i++){
                 int coordX = self.getCoordX() + selfCoords[1][i];
-                int coordY = self.getCoordY() + selfCoords[0][i];
                 
-                if (virtualGUI[coordY][coordX] == '!'){
-                    return true;
+                int coordY = self.getCoordY() + selfCoords[0][i];
+                if (GameModel.pixelInFrame(coordX, coordY)){
+                    if (virtualGUI[coordY][coordX] == '!'){
+                        return true;
+                    }
                 }
             }
-            
+            }  
             return false;
+            
     }
     @Override
     public void handleCollision() {
         
-        GameModel.setGameOver(true);
+       // GameModel.setGameOver(true);
         
     }
     
 }
+

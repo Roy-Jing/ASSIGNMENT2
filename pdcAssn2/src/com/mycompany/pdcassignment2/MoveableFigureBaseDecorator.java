@@ -14,7 +14,7 @@ import java.awt.Graphics;
  *
  * @author Roy
  */
-public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Runnable{
+public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
     
     protected MoveableFigure figure;
 
@@ -30,10 +30,7 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Run
     public boolean isActive(){
         return figure.isActive();
     }
-    public void run(){
-        new Thread(figure).start();
-    }
-    
+  
     @Override
     public void setSymbol(char symbol) {
         figure.setSymbol(symbol);
@@ -48,6 +45,7 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure, Run
     }
     
     public void doRun(){
+        
         figure.doRun();
     }
     

@@ -13,12 +13,11 @@ import java.awt.event.WindowEvent;
  *
  * @author Roy
  */
-public class GameController implements ActionListener{
+public class GameController implements ActionListener {
     
     private GameGUI GUI;
     private GameModel model;
-    private InitPanel initView;
-    
+   
     
     //controller cannot addview during construction as that would mean the view is
     //local to the controller only.

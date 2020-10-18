@@ -28,17 +28,17 @@ import java.util.logging.Logger;
  * a MoveableObject, conforming to the decorator design pattern.
  * @author Roy
  */
-public class MoveableObject implements MoveableFigure, Runnable{
+public class MoveableObject implements MoveableFigure{
     
     private volatile boolean active = true;
     private boolean changeToAltForm = true;
     private int velocityX;
     private int velocityY = 0;
        
-    private GameModel model;
+    protected GameModel model;
     private int numPixels;
-    private int coordX;
-    private int coordY;
+    private volatile int coordX;
+    private volatile int coordY;
  
     MoveableObject(String id){
         this.setName(id);
@@ -53,12 +53,12 @@ public class MoveableObject implements MoveableFigure, Runnable{
     /*
     Alternative form of a MoveableObject on screen.
     */
-    private int[][] altForm;
+    private volatile int[][] altForm;
     
     /*
     Original form of a MoveableObject on screen.
     */
-    private int[][] originalForm;
+    private volatile int[][] originalForm;
     @Override
     public int[][] getOriginalForm() {
         return originalForm;
@@ -132,9 +132,17 @@ public class MoveableObject implements MoveableFigure, Runnable{
     
     
     public void move(){
+        if (id.equals("dino")){
+            out.println(coordX + " " + coordY);
+            
+        } else{
+            out.println(id + ": ");
+            out.println(coordX + " " + coordY);
+        }
         coordX += velocityX;
         coordY += velocityY;
         
+        //moved = true;
     }
     public void addModel(GameModel mod){
         model = mod;
@@ -144,7 +152,7 @@ public class MoveableObject implements MoveableFigure, Runnable{
         //the coord furthest to the right in the matrix will be the right most coord.
         return this.getOriginalForm()[1][this.getNumPixels() - 1] + getCoordX();
     }
-    
+  
     //This method should only be overriden. What it does is that it instantiates
     //a class that overrides this method. For example,
     //the concrete decorator class Cloud overrides this method, and calling it
@@ -189,12 +197,13 @@ public class MoveableObject implements MoveableFigure, Runnable{
         for (int i = 0; i < numPixels; i++){
             //g.drawRect(pxSize * form0[1][i], pxSize * (form0[0][i]), model.getPixelSize(), model.getPixelSize());
             g.drawRect(pxSize * (coordX + form0[1][i]), pxSize * (coordY + form0[0][i]), model.getPixelSize(), model.getPixelSize());
-        
+            if (id.equalsIgnoreCase("dinosaur")){
+                out.println("drawSelf dino" + coordY);
+                
+            }
         
         }
-        
-        
-        
+
     }
     
    
@@ -206,16 +215,10 @@ public class MoveableObject implements MoveableFigure, Runnable{
     
     private volatile boolean moved = false;
     
-    public void setMoved(boolean flag){
-        moved = flag;
-    }
+
     
    
     private boolean canMovebody = false;
-
-    public boolean isCanMovebody() {
-        return canMovebody;
-    }
 
     public void setCanMovebody(boolean canMovebody) {
         this.canMovebody = canMovebody;
@@ -226,55 +229,28 @@ public class MoveableObject implements MoveableFigure, Runnable{
         this.handler = handler;
         
     }
+    
+    
     public void doRun(){
-        model.refreshFrame();
-           if (!moved){
-                if (stillWithinFrame()){
-                    try {
-                        int velAdjusted;
-                        
-                        if (handler.checkForCollision()){
-                            handler.handleCollision();
-                            
-                            model.setGameOver(true);
-                            return;
-                        }
-                        move();
-                        moved = true;
-                        Thread.sleep(100);
-                        
-                        // model.notifyObservers(null);
-                        
-                    } catch (InterruptedException ex) {
-                        
-                    }
-                     
-                } else{
-                    out.println("not in frame");
-                    
-                    //model.setNumCurrentFigs(model.getNumCurrentFigs() - 1);
-                    active = false;
-                    
-                }
-           }
+     
+       if (!model.isInterrupted()){
+            move();
+        } else{
+            out.println("not in frame");
 
-       }
+            //model.setNumCurrentFigs(model.getNumCurrentFigs() - 1);
+            active = false;
+
+        }
+    }
+
+    
+
        
        
     
  
-    @Override
-    public void run() {
-        
-        out.println("started");
-       while(active){
-           doRun();
-       }//out.println("still active and moved = " + moved);
-           
-       
-       
-    }
-
+   
     @Override
     public char getSymbol() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -288,6 +264,11 @@ public class MoveableObject implements MoveableFigure, Runnable{
     @Override
     public void setActive(boolean flag) {
         active = flag;
+    }
+
+    @Override
+    public void setMoved(boolean flag) {
+        moved = flag;
     }
     
     

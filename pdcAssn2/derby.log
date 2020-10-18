@@ -1,10 +1,10 @@
 ----------------------------------------------------------------
-Sun Oct 11 23:02:53 NZDT 2020:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0175-171c-ef06-000007313400 
-on database directory C:\Users\Roy\Documents\NetBeansProjects\PDCAssn2\ASSIGNMENT2\pdcAssn2\gameDB with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@4e0e2f2a 
+Sun Oct 18 15:22:13 NZDT 2020:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0175-3983-b160-000006d37260 
+on database directory C:\Users\Roy\Documents\NetBeansProjects\PDCAssn2\ASSIGNMENT2\pdcAssn2\gameDB with class loader sun.misc.Launcher$AppClassLoader@610455d6 
 Loaded from file:/C:/Users/Roy/Downloads/db-derby-10.14.2.0-lib/db-derby-10.14.2.0-lib/lib/derby.jar
 java.vendor=Oracle Corporation
-java.runtime.version=13.0.2+8
+java.runtime.version=1.8.0_261-b12
 user.dir=C:\Users\Roy\Documents\NetBeansProjects\PDCAssn2\ASSIGNMENT2\pdcAssn2
 os.name=Windows 10
 os.arch=amd64

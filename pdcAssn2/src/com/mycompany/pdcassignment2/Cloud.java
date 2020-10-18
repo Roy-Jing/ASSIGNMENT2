@@ -1,5 +1,7 @@
 package com.mycompany.pdcassignment2;
 
+import java.util.Random;
+
 /**
  *The Cloud class. Cloud is a hybrid of CollideableFigure and MoveableFigure
  * so, it should have functionalities derived from both. It is collideable 
@@ -13,22 +15,25 @@ package com.mycompany.pdcassignment2;
 
 public class Cloud extends MoveableFigureBaseDecorator{
     
+    Random generator = new Random();
     
     
     
     Cloud(MoveableFigure mF){
         super(mF);    
+   
+
         setOriginalForm(new int[][]{
        
             {0,   0, 0, 0, 0, 0, 0, 0, 0,   1, 1,  1, 1, 1, 1, 1, 1, 1},
             {0,   1, 2, 3, 4, 5, 6, 7, 8,   0, 1, 2,  3, 4, 5, 6, 7, 8}
         });
         setVelocityX(-1);
-        setCoordY(GameModel.getFrameHeight() - 4 -GameModel.getRand().nextInt(GameModel.getFrameHeight() - 4 ));
+        setCoordY(GameModel.getFrameHeight() - 4 - generator.nextInt(GameModel.getFrameHeight() - 4 ));
         setCoordX(GameModel.getFrameWidth() );
         this.setAltForm(this.getOriginalForm());
-        this.setNumPixels(18);
-        
+        this.setNumPixels(this.getOriginalForm()[0].length);
+        this.setCollisionHandler(new CollideableCollisionHandler(this));
         
     }
    

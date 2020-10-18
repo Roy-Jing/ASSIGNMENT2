@@ -22,6 +22,9 @@ public abstract class CollideableFigureBaseDecorator implements CollideableFigur
         figure.setCollisionHandler(handler);
     }
     
+    public void doRun(){
+        figure.doRun();
+    }
     
     @Override
     public void setRightMostCoordX(int rightMostCoordX) {

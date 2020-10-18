@@ -275,6 +275,9 @@ class Data{
     String difficulty;
     int screenHeight, screenWidth;
     
+    public String username;
+    
+    
 }
 
 

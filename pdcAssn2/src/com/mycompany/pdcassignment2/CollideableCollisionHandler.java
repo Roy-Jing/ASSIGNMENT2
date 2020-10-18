@@ -5,6 +5,8 @@
  */
 package com.mycompany.pdcassignment2;
 
+import static java.lang.System.out;
+
 /**
  *
  * @author Roy
@@ -15,8 +17,11 @@ public class CollideableCollisionHandler extends CollisionHandler{
     private int adjustedVelocity;
     
     public void handleCollision(){
+       out.println("adjusting!!!");
        
         this.adjustVelocity(adjustedVelocity);
+        dino.setShouldMovePart(false);
+
     }
     
     CollideableCollisionHandler(Figure fig){
@@ -62,10 +67,10 @@ public class CollideableCollisionHandler extends CollisionHandler{
              //because when dinosaur lands, it should not appear to
              //be moving on the screen.
              dino.setVelocityX(0);
+             dino.isJumping(false);
              
         }
         
-        dino.setShouldMovePart(true);
         
     }
     

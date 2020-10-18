@@ -9,6 +9,9 @@ import static java.lang.System.out;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
+
 
 /**
  *
@@ -16,6 +19,9 @@ import java.util.Queue;
  */
 public class DFS {
     
+    public static void iterativeDepthFirst(){
+        
+    }
     public static void breadthFirst(Node startNode){
         Queue<Node> queue = new LinkedList();
         queue.add(startNode);
@@ -71,10 +77,109 @@ public class DFS {
                 e.addEdge(d);
                 e.addEdge(b);
                 breadthFirst(a);
+                out.println("iterative: ");
                 
-                //search(a);
+                Stack<Node> vStack = new Stack();
+                 vStack.add(e);
+                 LinkedList<Node> visitedNode = new LinkedList();
+                 
+                 while (!vStack.isEmpty()){
                 
+                 Node parent = vStack.pop();
+                 visitedNode.add(parent);
+                 
+                 out.println(parent);
+                 
+                 for (Edge edge : (ArrayList<Edge>) parent.edgeset){
+                     Node v = edge.getOppositeNodeof(parent);
+                     
+                     if (!visitedNode.contains(v)){
+                         visitedNode.add(v);
+                         vStack.push(v);
+                         
+                     }
+                 }
+                 
+                 
+                
+                 }
         }
+}
+
+class priorityQ<E extends Comparable> {
+   
+    Node top;
+    Node last;
+    
+   
+    public E findMin(){
+        return top.elem;
+        
+    }
+    
+    public void swap(Node from, Node to){
+        Node temp;
+        if (from.left == to){
+            temp = to.right;
+            to.left = from.left;
+            to.right = from.right;
+            
+        } else{
+            temp = to.left;
+            to.right = from.right;
+            to.left = from.left;
+        }
+        
+        from.left = to.left;
+            from.right = to.right;
+        
+    }
+    
+    public void dequeMin(){
+        
+    }
+    public void downHeapBubbling(Node startNode){
+       Node left = startNode.left;
+       Node right = startNode.right;
+       
+       if (left != null){
+           
+           
+           if (right != null){
+               if (startNode.compareTo(left) != 0 || startNode.compareTo(right) != 0){
+                    if (left.compareTo(right) < 0){
+                         if (left.compareTo(startNode) < 0){
+                             swap(startNode, left);
+                             this.downHeapBubbling(startNode);
+
+                         }
+                    } else if (right.compareTo(startNode) < 0){
+                        swap(startNode, right);
+                        this.downHeapBubbling(startNode);
+
+                    }
+               }
+               
+           } else if (left.compareTo(startNode) < 0)
+               swap(startNode, left);
+               this.downHeapBubbling(startNode);
+           
+       }
+       
+       
+    }
+    
+  
+    
+    class Node implements Comparable<Node>{
+        E elem;
+        Node left, right, leftSib;
+        
+        public int compareTo(Node other){
+            return elem.compareTo(other.elem);
+            
+        }
+    } 
 }
 
 class Edge{

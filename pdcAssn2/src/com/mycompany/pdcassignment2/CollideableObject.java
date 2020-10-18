@@ -31,7 +31,11 @@ public class CollideableObject implements CollideableFigure{
     }
     
       
-    
+    public void doRun(){
+        if (handler.checkForCollision()){
+            handler.handleCollision();
+        }
+    }
 
     @Override
     public int getRightMostCoordX() {

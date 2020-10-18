@@ -1,6 +1,7 @@
 package com.mycompany.pdcassignment2;
 
 import java.awt.Graphics;
+import static java.lang.System.out;
 
 /*
  * The Dinosaur class that is to be controlled by the player.
@@ -17,8 +18,9 @@ class Dinosaur extends Animal{
   
     private boolean previouslyHunched = false;
     private boolean hunched = false;
-    private boolean isJumping = false;
-
+    private volatile boolean isJumping = false;
+    
+  
     public boolean isJumping() {
         return isJumping;
     }
@@ -35,7 +37,7 @@ class Dinosaur extends Animal{
     private boolean accelerated = false;
     private boolean landed = true;
     private boolean shouldMovePart = true;
-    private GameGUI observerView;
+
     
     public boolean isLanded() {
         return landed;
@@ -80,13 +82,7 @@ class Dinosaur extends Animal{
     
    
     public void moveBackward(){
-        if (!this.isJumping){
-            if (this.stillWithinFrame()){
-                this.setCoordX(this.getCoordX() + this.getVelocityX());
-                
-            }
-            
-        }
+        
     }
     
     public void movePart(){
@@ -99,45 +95,12 @@ class Dinosaur extends Animal{
     }
     
     public void jump(){
+        out.println("jumping");
         
         this.setVelocityY(this.getVelocityY() + 1);
     }
     
-    
-    public void updateVirtualGUI(){
-        int velocityX = this.getVelocityX();
-        int velocityY = this.getVelocityY();
-        int startPos = 0, shiftDir = 0, endPos = 0;
-        
-       if (velocityX > 0 || velocityY > 0){
-           startPos = getNumPixels() - 1;
-           shiftDir = -1;
-           endPos = -1;
-       } else if (velocityX <= 0 || velocityY < 0){
-           startPos = 0;
-           shiftDir = 1;
-           endPos = getNumPixels();
-           
-       } 
-        if (this.getVelocityX() != 0 || this.getVelocityY() !=0){
-            char[][] virtualGUI = GameModel.getVirtualGUI();
-            
-            for (int i = startPos; i != endPos; i+= shiftDir){
-                int coordY = this.getOriginalForm()[0][i];
-                int coordX = this.getOriginalForm()[1][i];
-                
-                virtualGUI[coordY][coordX] =  ' ';
-                virtualGUI[coordY + velocityY][coordX + velocityX] = '!';
-               
-            }
-            
-        }
-        
-    }
-    public void run(){
-       doRun();
-        
-    }
+
     
     public void hunch(boolean toHunch){
         int[][] original = this.getOriginalForm();
@@ -161,14 +124,27 @@ class Dinosaur extends Animal{
         }
     }
     
+    @Override
     public void doRun(){
-        super.doRun();
+        out.println("do Run dino");
         if (isJumping){
-            this.setVelocityY(getVelocityY() + 1);
             
+            this.jump();
+            if (this.getFeetLocationY() >= GameModel.getFrameHeight()){
+                out.println("exceeded frame height !");
+                
+            }
+            //out.println("velocityY" + this.getVelocityY());
         }
+        
+        super.doRun();
+        out.println("coordY dino: " + this.getCoordY());
+        
+        
+        
     }
-            
+    
+    
     
     /**
      * The stillWithinFrame method will adjust a MoveableFigure's
@@ -177,33 +153,13 @@ class Dinosaur extends Animal{
      * the screen
      * @return 
      */
-    @Override
-    public boolean stillWithinFrame(){
-        
-        //we don't want the dinosaur to shift outside the frame,
-        //so the wise thing to do is to readjust its velocityX 
-        //so that it doesn't
-        
-        //check left edge of frame.
-        if (this.getCoordX() + this.getVelocityX() < 0){
-             this.setVelocityX(-this.getCoordX());
-             this.setAccelerated(false);
-        }
-        
-        //check right edge of frame.
-        else if (getRightMostCoordX() + this.getVelocityX() >= GameModel.getFrameWidth()){
-            this.setVelocityX(GameModel.getFrameWidth() - this.getRightMostCoordX() - 1);
-            this.setAccelerated(false);
-
-        }
-        
-        return true;
-        
-    }
+    
    
    
-    Dinosaur(MoveableFigure figure){
-        super(figure);
+    Dinosaur(MoveableFigure fig){
+        
+        
+        super(fig);
         setCoordY(GameModel.getFrameHeight() - 5); //coord Y is body line
         setCoordX(5);
         
@@ -235,6 +191,39 @@ class Dinosaur extends Animal{
     
     }
     
+    
+    @Override
+    public boolean stillWithinFrame(){
+        
+        //we don't want the dinosaur to shift outside the frame,
+        //so the wise thing to do is to readjust its velocityX 
+        //so that it doesn't
+        
+        //check left edge of frame.
+        if (this.getCoordX() + this.getVelocityX() < 0){
+             this.setVelocityX(-this.getCoordX());
+             this.setAccelerated(false);
+        }
+        
+        //check right edge of frame.
+        else if (getRightMostCoordX() + this.getVelocityX() >= GameModel.getFrameWidth()){
+            this.setVelocityX(GameModel.getFrameWidth() - this.getRightMostCoordX() - 1);
+            this.setAccelerated(false);
+
+        }
+        
+        if (isJumping && getFeetLocationY() + this.getVelocityY() >= GameModel.getFrameHeight()){
+            this.setVelocityY(GameModel.getFrameHeight() - this.getFeetLocationY() - 1);
+            out.println("dino not jumping");
+            
+            this.isJumping(false);
+        }
+        
+        return true;
+        
+    }
+    
+    
     public int getRightFootCoordX(){
         
          return this.getOriginalForm()[1][rightFootCoordIndexX] + this.getCoordX();
@@ -265,17 +254,16 @@ class Dinosaur extends Animal{
     }
 
     void setShouldMovePart(boolean b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    void isJumping(boolean b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-   
-
-
+    public void isJumping(boolean b) {
+        isJumping = b;
         
+    }
 
-   
+
+
 }
+
+

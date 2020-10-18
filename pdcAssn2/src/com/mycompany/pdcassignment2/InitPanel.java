@@ -14,6 +14,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import static java.lang.System.out;
 import java.util.Observable;
@@ -22,6 +23,7 @@ import java.util.Observer;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -149,8 +151,10 @@ public class InitPanel extends JPanel implements Observer {
         
         
         this.setLayout(new GridBagLayout());
+        
         usernameField = new JTextField("            ");
         passwordField = new JTextField("            ");
+        
         
         loginButton = new JButton("Login");
         loginButton.addActionListener(controller);
@@ -173,22 +177,19 @@ public class InitPanel extends JPanel implements Observer {
         
         GameModel gM = new GameModel();
       
-        
-        JFrame GUIFrame = new JFrame("Main game");
-        
         gM.addObserver(p);
         controller.addModel(gM);
         controller.addView(p);
-        GUIFrame.getContentPane().add(gameGUI);
-        GUIFrame.setVisible(true);
         
         p.addController(controller);
         gM.addObserver(gameGUI);
         //f.add(p);
-        
-        
+      
         gM.init();
         
+                
+        
+   
         //p.dispTips();
         //f.setVisible(true);
         
@@ -238,7 +239,7 @@ public class InitPanel extends JPanel implements Observer {
                         + "That's everything, have fun!");
         messagePane = new JScrollPane(text);
         nextButton = new JButton("next");
-        gbc.gridx = gbc.gridy = 1;
+       
         
         add(this.messagePane);
         out.println(controller);
@@ -310,6 +311,8 @@ public class InitPanel extends JPanel implements Observer {
         return collected;
         
     }
+    
+    
     @Override
     public void update(Observable o, Object arg) {
         
@@ -324,21 +327,36 @@ public class InitPanel extends JPanel implements Observer {
             boolean prevExist = (boolean) arg;
             if (!prevExist)
                 dispTips();
-             else 
+            else{ 
+                //this.printWelcomeBack();
+            
                 this.askForUsingPreviousSetting();
+            }
         }
             
        
     }
     
+    private void addAt(int x, int y, JComponent comp){
+        gbc.gridx = x;
+        gbc.gridy = y;
+        this.add(comp, gbc);
+        
+    }
     
     public void bringToLogin(){
         
         removeAll(); 
-        add(getUsernameField());
-        add(getPasswordField());
+        this.setLayout(new GridBagLayout());
+        addAt(1, 0, new JLabel("Username"));
+        
+        addAt(1,1, getUsernameField());
+        
+        addAt(1, 0, new JLabel("Password"));
+        
+        addAt(4, 1, getPasswordField());
 
-        add(getLoginButton());
+        addAt(4, 3, getLoginButton());
         out.println(controller);
         loginButton.addActionListener(controller);
         

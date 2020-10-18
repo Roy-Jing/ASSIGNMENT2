@@ -1,6 +1,7 @@
 package com.mycompany.pdcassignment2;
 
 
+import static java.lang.System.out;
 import java.util.Random;
 
 
@@ -17,7 +18,7 @@ public enum MoveableTypes {
     PLANT(new Plant(new MoveableObject("PLANT"))),
     BIRD(new Bird(new MoveableObject("BIRD"))),
     CLOUD(new Cloud(new MoveableObject("CLOUD")));
-    
+   
     
     private MoveableFigure f;
    
@@ -27,7 +28,8 @@ public enum MoveableTypes {
     }
 
     public MoveableFigure getNewFigure(){
-      
+        out.println("get new figure");
+        
         return f.getNewFigure();
     }
       

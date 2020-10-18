@@ -19,6 +19,8 @@ public class Floor extends CollideableFigureBaseDecorator{
        setCoordX(0);
        setRightMostCoordX(GameModel.getFrameWidth() - 1);
        setCoordY(GameModel.getFrameHeight() - 1);
+       
+       
    }
 
     

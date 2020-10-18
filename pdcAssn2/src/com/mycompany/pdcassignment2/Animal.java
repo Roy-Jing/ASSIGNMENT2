@@ -29,6 +29,8 @@ public abstract class Animal extends MoveableFigureBaseDecorator{
     }
     
     public void doRun(){
+        
+        
         super.doRun();
         movePart();
             

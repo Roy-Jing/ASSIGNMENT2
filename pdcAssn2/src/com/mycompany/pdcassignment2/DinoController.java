@@ -7,12 +7,13 @@ package com.mycompany.pdcassignment2;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import static java.lang.System.out;
 
 /**
  *
  * @author Roy
  */
-public class DinoController implements KeyListener {
+public class DinoController implements KeyListener  {
 
     public static boolean isJumping() {
         return dino.isJumping();
@@ -20,6 +21,7 @@ public class DinoController implements KeyListener {
     }
     
     DinoController(Dinosaur d){
+        
         dino = d;
     }
 
@@ -32,17 +34,18 @@ public class DinoController implements KeyListener {
    
     @Override
     public void keyPressed(KeyEvent e) {
+        out.println("pressed");
          
         if (!keyHit){
             char key = e.getKeyChar();
             
             switch (key) {
                 case 'w':
-                    //out.print("w pressedw pressedw pressedw pressedw pressedw pressedw pressedw pressedw pressedw pressedw pressed");
+
                     keyHit = true;
                     dino.setVelocityY(-4);
                     dino.setLanded(false);
-                    
+                    dino.isJumping(true);
                     if (dino.isHunched()){
                         dino.hunch(false);
                         
@@ -50,11 +53,7 @@ public class DinoController implements KeyListener {
                     }
                     dino.setAccelerated(false);
                     dino.setVelocityX(0);
-                    //dino.jump();
-                    
-                    //System.out.println("w pressed");
-                    
-                    //dino.setLanded(false);
+                  
                     break;
                     
                

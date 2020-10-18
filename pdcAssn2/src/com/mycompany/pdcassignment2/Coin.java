@@ -31,11 +31,7 @@ public class Coin extends MoveableFigureBaseDecorator implements CollideableFigu
         
     }
     
-    public void handleCollision(){
-        this.setActive(false);
-        GameModel.addCoin();
-        this.setActive(false);
-    }
+    
     public void spin(){
         if (ovalWidth == 1){
             spinDir = 1;

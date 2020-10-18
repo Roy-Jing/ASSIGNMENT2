@@ -1,6 +1,7 @@
 package com.mycompany.pdcassignment2;
 
 import java.awt.Graphics;
+import java.util.Random;
 
 
 
@@ -12,7 +13,7 @@ import java.awt.Graphics;
  */
 public interface Figure {
     
- 
+
     public int getRightMostCoordX();
   
     public int getCoordX();
@@ -25,6 +26,9 @@ public interface Figure {
     
     public void setCollisionHandler(CollisionHandler handler);
     
+    public void doRun();
+    
+    
 }
 
 
@@ -35,7 +39,7 @@ interface CollideableFigure extends Figure{
 }
 
 
-interface MoveableFigure extends Figure, Runnable{
+interface MoveableFigure extends Figure{
     
     public int getNumPixels();
 
@@ -77,6 +81,8 @@ interface MoveableFigure extends Figure, Runnable{
     public void setMoved(boolean flag);
     
     public void setActive(boolean flag);
+
+    public boolean getid();
     
 }
 

@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import static java.lang.System.out;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -17,6 +18,7 @@ import java.util.Observer;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -24,12 +26,19 @@ import java.util.logging.Logger;
  */
 public class GameModel extends Observable implements Runnable{
 
-    static char[][] getVirtualGUI() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    
     private int currentScore = 0;
     private static volatile int numCoinsCollected = 0;
     private String difficulty;
+    private boolean interrupted  = false;
+
+    public boolean isInterrupted() {
+        return interrupted;
+    }
+
+    public void setInterrupted(boolean interrupted) {
+        this.interrupted = interrupted;
+    }
     
     public static void addCoin(){
         numCoinsCollected++;
@@ -82,24 +91,26 @@ public class GameModel extends Observable implements Runnable{
         this.numCurrentFigs = numCurrentFigs;
     }
     
- 
+    public static boolean pixelWithFrame(int x, int y){
+        if (x > -1 && x < frameWidth){
+            if (y > -1 && y < frameHeight){
+                return true;
+            }
+        }
+        
+        return false;
+    }
   
     private volatile static int drawCount = 0;
     private static volatile boolean gameOver = false;
     private int spawnPeriod = 5000;
     
-    public static int getDrawCount() {
-        return drawCount;
-    }
+  
+    private static boolean onPause = false;
     
-    public static void setDrawCount(int ct) {
-        drawCount = ct;
+    public void pause(boolean flag){
+        onPause = flag;
     }
-    public static Random getRand() {
-        return rand;
-    }
-    
-    
     
     public synchronized void updateCount(){
         out.println("update called");
@@ -163,8 +174,9 @@ public class GameModel extends Observable implements Runnable{
         
         dbM = new DatabaseModel();
         Boolean prevExist;
+        
         if ((preferences = dbM.getPreference()) != null){
-            
+            userData = dbM.getData();
             prevExist = true;
         } else
             prevExist = false;
@@ -200,14 +212,12 @@ public class GameModel extends Observable implements Runnable{
         //this.notifyObservers(preferences);
         
     }
-    
-    private LinkedList<MoveableFigure> figs = new LinkedList<MoveableFigure>();
-    
+        
     public void removeInactiveFigures(){
         
         synchronized (figs){
             Iterator<MoveableFigure> it = figs.iterator();
-
+                
                 //it.next();
                 while (it.hasNext()){
                     MoveableFigure f = it.next();
@@ -249,42 +259,7 @@ public class GameModel extends Observable implements Runnable{
             out.println("is drawing: " + drawing);
     }
     
-    
-    public void refreshFrame(){
-        this.printInfo();
-        
-        if (!drawing){
-            
-            drawing = true;
-            
-            out.println("dCtLim" + drawCountLim);
-            out.println("dCt" + drawCount);
-            out.println("is drawing: " + drawing);
-            
-            //drawCount = 0;
-           //drawCountLim = this.getNumCurrentFig();
-            
-            
-            this.setChanged();
-            //figs.clone()
-            this.notifyObservers(figs);
-            
-            //drawing = false;
-             for (MoveableFigure fig : figs){
-                fig.setMoved(false);
-                //affecting those that just had their moved flag set to true
-            }
-            
-            //setting drawing = false here is too late as !drawing means the if condition 
-            //won't be true by the time.
-           
-           
-        }
-       
-    }
-    
    
- 
     public synchronized void addDrawCount(){
         drawCount++;
     }
@@ -297,51 +272,118 @@ public class GameModel extends Observable implements Runnable{
     
     private Dinosaur d;
     
-    public Dinosaur getDinosaur(){
-        return d;
+    public static char[][] getVirtualGUI(){
+        return virtualGUI;
+    }
+    
+    public void initaliseVirtualGUI(){
+        virtualGUI = new char[frameHeight][frameWidth];
         
+        int[][] coordMat = d.getOriginalForm();
+        int dinoCoordX = d.getCoordX();
+        int dinoCoordY = d.getCoordY();
+        for (int i = 0; i < d.getNumPixels(); i++){
+            int cX = coordMat[1][i] ;
+            int cY = coordMat[0][i];
+            
+            virtualGUI[cY + dinoCoordY][cX + dinoCoordX] = '!';
+            
+        }
+    }
+    public void updateVirtualGUI(){
+        int velocityX =  d.getVelocityX();
+        int velocityY = d.getVelocityY();
+        int coordY = d.getCoordY();
+        int coordX = d.getCoordX();
+        
+        int startPos = 0, shiftDir = 0, endPos = 0;
+        if (velocityX != 0 || velocityY != 0){
+       if (velocityX > 0 || velocityY > 0){
+           startPos = d.getNumPixels() - 1;
+           shiftDir = -1;
+           endPos = -1;
+       } else if (velocityX <= 0 || velocityY < 0){
+           startPos = 0;
+           shiftDir = 1;
+           endPos = d.getNumPixels();
+           
+       } 
+     
+            int form[][] = d.getOriginalForm();
+            
+            for (int i = startPos; i != endPos; i+= shiftDir){
+                int cY = form[0][i] + coordY;
+                int cX = form[1][i] + coordX;
+                
+                virtualGUI[cY][cX] =  ' ';
+                virtualGUI[cY + velocityY][cX + velocityX] = '!';
+               
+            }
+            
+        
+        }
+    }
+    
+    public static boolean isGameOver(){
+        return gameOver;
+    }
+    Deque<MoveableFigure> figs = new LinkedList();
+    public void initDino(){
+        
+        d = new Dinosaur(new MoveableObject("Dino"));
+        d.addModel(this);
+        figs.add(d);
+   
+        setChanged();
+        
+        
+        notifyObservers(d);
+        initaliseVirtualGUI();
+        CollisionHandler.addDino(d);
+    }
+    
+    private Data userData;
+    
+    public void generateNewFigures(){
+        int numValues =  MoveableTypes.values().length;
+                        
+        MoveableFigure fig = MoveableTypes.values()[rand.nextInt(numValues)].getNewFigure();
+
+        fig.addModel(this);
+        //adding new figure while painting
+        figs.addFirst(fig);
+    }
+    public void printWelcome(){
+        int dialogResult;
+        dialogResult = JOptionPane.showConfirmDialog(null, "Welcome back" + userData.username 
+                + "\n your highest current score:  " + userData.currentScore,"Info", JOptionPane.OK_OPTION);
+        
+       
+    
     }
     public void run(){
+        
         int frameCount = 0;
         setDim(preferences.getScreenDim());
-        //drawCountLim = 1;
-        
-        Dinosaur dino = d = new Dinosaur(new MoveableObject("Dinosaur"));
-        dino.addModel(this);
-        
-        figs.add(dino);
+        initDino();
         setChanged();
         notifyObservers(preferences);
-        CollisionHandler.addDino(dino);
         
         
-        while(!gameOver){
-            
-                this.removeInactiveFigures();
-                if (getNumCurrentFig() < MAX_NUM_FIGS ){
-                    int numValues =  MoveableTypes.values().length;
-
-                    MoveableFigure fig = MoveableTypes.values()[rand.nextInt(numValues)].getNewFigure();
-
-                    fig.addModel(this);
-                    //adding new figure while painting
-                    figs.add(fig);
+        
+        while(true){
+                
+                if (!this.isInterrupted()){
+                    if (figs.size() < MAX_NUM_FIGS ){
+                        this.generateNewFigures();
+                    }
                     
-
-                    new Thread(fig).start();
                 }
                 
-                
-            
-            
-//            out.println("drawCount = " + drawCount);
-//            out.println("numCurrent = " + this.numCurrentFigs);
-            
-            
-
-            //cannot say else draw = true
-            try {
-                    Thread.sleep(2000);
+                this.setChanged();
+                this.notifyObservers(figs);
+                try {
+                    Thread.sleep(200);
                     
                 } catch (InterruptedException ex) {
                 }
@@ -359,11 +401,11 @@ public class GameModel extends Observable implements Runnable{
         dbM.closeConnections();
     }
 
-    void setCustomisedPreferences() {
-    }
 
     public static void setGameOver(boolean b) {
         gameOver = b;
+        
+        
     }
     
     
