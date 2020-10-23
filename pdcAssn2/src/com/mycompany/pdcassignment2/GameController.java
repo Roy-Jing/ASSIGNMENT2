@@ -7,13 +7,15 @@ package com.mycompany.pdcassignment2;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 /**
  *
  * @author Roy
  */
-public class GameController implements ActionListener {
+public class GameController extends WindowAdapter implements WindowListener {
     
     private GameGUI GUI;
     private GameModel model;
@@ -28,15 +30,15 @@ public class GameController implements ActionListener {
     
     
     
-    private void addModel(GameModel model){
+    public void addModel(GameModel model){
         this.model = model;
     }
-    @Override
-    public void actionPerformed(ActionEvent e) {
-       
-            
-    }
     
+    public void windowClosing(WindowEvent e){
+        model.setInterrupted(true);
+        GUI.promptQuit();
+        
+    }
     
     
 }

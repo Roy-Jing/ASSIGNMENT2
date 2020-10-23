@@ -28,8 +28,8 @@ public class Cloud extends MoveableFigureBaseDecorator{
             {0,   0, 0, 0, 0, 0, 0, 0, 0,   1, 1,  1, 1, 1, 1, 1, 1, 1},
             {0,   1, 2, 3, 4, 5, 6, 7, 8,   0, 1, 2,  3, 4, 5, 6, 7, 8}
         });
-        setVelocityX(-1);
-        setCoordY(GameModel.getFrameHeight() - 4 - generator.nextInt(GameModel.getFrameHeight() - 4 ));
+        setVelocityX(-GameModel.getPixelSize());
+        setCoordY(GameModel.getFrameHeight() - 4); // - generator.nextInt(GameModel.getFrameHeight() - 4 ));
         setCoordX(GameModel.getFrameWidth() );
         this.setAltForm(this.getOriginalForm());
         this.setNumPixels(this.getOriginalForm()[0].length);

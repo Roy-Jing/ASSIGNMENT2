@@ -129,18 +129,13 @@ public class MoveableObject implements MoveableFigure{
     public void setVelocityX(int v){
         this.velocityX = v;
     }
+    private int pixelSize = 5;
     
     
     public void move(){
-        if (id.equals("dino")){
-            out.println(coordX + " " + coordY);
-            
-        } else{
-            out.println(id + ": ");
-            out.println(coordX + " " + coordY);
-        }
-        coordX += velocityX;
-        coordY += velocityY;
+    
+        coordX += getVelocityX();
+        coordY += this.getVelocityY();
         
         //moved = true;
     }
@@ -179,6 +174,10 @@ public class MoveableObject implements MoveableFigure{
     }
     
     private String id;
+    
+    public String getid(){
+        return id;
+    }
     public void setName(String name){
         id = name;
     }
@@ -196,18 +195,15 @@ public class MoveableObject implements MoveableFigure{
      //   g.drawString(id, coordX, coordY);
         for (int i = 0; i < numPixels; i++){
             //g.drawRect(pxSize * form0[1][i], pxSize * (form0[0][i]), model.getPixelSize(), model.getPixelSize());
-            g.drawRect(pxSize * (coordX + form0[1][i]), pxSize * (coordY + form0[0][i]), model.getPixelSize(), model.getPixelSize());
-            if (id.equalsIgnoreCase("dinosaur")){
-                out.println("drawSelf dino" + coordY);
-                
-            }
-        
+            g.drawRect(pxSize * (coordX / 5 + form0[1][i]), pxSize * (coordY / 5 + form0[0][i]), model.getPixelSize(), model.getPixelSize());
+         
         }
 
     }
     
    
     public boolean isActive(){
+        
         return active;
     }
     
@@ -232,9 +228,25 @@ public class MoveableObject implements MoveableFigure{
     
     
     public void doRun(){
-     
+      
        if (!model.isInterrupted()){
-            move();
+           out.println("check");
+           
+            if (handler.checkStillWithinFrame()){
+                if (handler.checkForCollision()){
+                    handler.handleCollision();
+                    
+                } 
+                move();
+                
+            } else{
+                
+                out.println("inactive");
+                
+                active = false;
+            }
+            
+           
         } else{
             out.println("not in frame");
 
@@ -242,6 +254,7 @@ public class MoveableObject implements MoveableFigure{
             active = false;
 
         }
+       
     }
 
     

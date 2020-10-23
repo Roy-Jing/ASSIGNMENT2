@@ -35,11 +35,15 @@ public interface Figure {
 interface CollideableFigure extends Figure{
     
     public void setRightMostCoordX(int c);
+    
+   
         
 }
 
 
 interface MoveableFigure extends Figure{
+    
+    public boolean stillWithinFrame();
     
     public int getNumPixels();
 
@@ -51,10 +55,10 @@ interface MoveableFigure extends Figure{
     
     public int getVelocityY();
     
+    public void setActive(boolean active);
+    
     public void setVelocityY(int v);
     
-    public boolean stillWithinFrame();
-
     public MoveableFigure getNewFigure();
     
     public char getSymbol();
@@ -75,14 +79,10 @@ interface MoveableFigure extends Figure{
     
     public void addModel(GameModel m);
     
-    public void doRun();
-    
-    
     public void setMoved(boolean flag);
     
-    public void setActive(boolean flag);
 
-    public boolean getid();
+    public String getid();
     
 }
 

@@ -8,16 +8,24 @@ package com.mycompany.pdcassignment2;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import static java.lang.System.out;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -34,6 +42,8 @@ public class GameGUI extends JPanel implements Observer {
     private DinoController dinoControl;
     private GameModel model;
     private JFrame frame = new JFrame("Main game");
+    private Image img;
+    private GameController controller;
     
     
     public void setModel(GameModel model) {
@@ -44,8 +54,11 @@ public class GameGUI extends JPanel implements Observer {
         return dinoControl;
     }
 
-    private Color bgColor;
     private Dimension screenDim;
+
+    public void setScreenDim(Dimension screenDim) {
+        this.screenDim = screenDim;
+    }
    // private JFrame frame;
     private Deque<MoveableFigure> tempFigs;
     
@@ -60,77 +73,88 @@ public class GameGUI extends JPanel implements Observer {
     
     
     volatile boolean busy = false;
+    
+    
     @Override
     public synchronized void paintComponent(Graphics g){
         out.println("inside paintComp");
         
         super.paintComponent(g);
-        boolean found = false;
-        Figure first = tempFigs.peekFirst();
-        int ct = 0;
-            for (MoveableFigure f : tempFigs){
-                out.println(f.getid());
-                
-            }
-       
-        out.println("num dino" + ct);
+        g.drawImage(image, 0, 0, GameModel.getFrameWidth(), GameModel.getFrameHeight(), null);
         
+        //img.paintIcon(this, g, 0, 0);
+        g.drawRect(GameModel.getFrameWidth() / 2, GameModel.getFrameHeight() / 2, 10, 10);
+        boolean found = false;
+        MoveableFigure first = tempFigs.peekFirst();
+      
+      
         MoveableFigure fig;
         
         do{
-            fig = tempFigs.pollLast();
-            if (fig instanceof Dinosaur){
-                if (!found){
-                    found = true;
-                } else{
-                    out.println("error: duplicate dinosaur");
-                    System.exit(0);
-                }
-                
-            }
-            if (fig.stillWithinFrame())
-                tempFigs.addFirst(fig);
+           fig = tempFigs.pollLast();
+
             
-            fig.drawSelf(g);
-            fig.doRun();
+           
+            if (fig.isActive()){
+               
+                fig.drawSelf(g);
+                fig.doRun();
+                tempFigs.addFirst(fig);
+            }
             
         } while (fig != first);
         
+        if (dino.isActive()){
+            dino.drawSelf(g);
+            dino.doRun();
+            
+            
+        }
+        printGUI();
        
         
-        //g.drawString(currentScore.toString(), 0, 0);
-        
         
     }
     
+    public void printGUI(){
+        for (char [] row : dino.getVirtualGUI()){
+            for (char c : row){
+                out.print(c);
+            }
+            
+            out.println();
+            
+        }
+    }
+     public void loadPreferences(Preferences p){
+        this.setImage(p.bgImage);
+        this.setPreferredSize(p.screenDim);
+        this.setVisible(true);
+
+    }
+     
+    public void addController(GameController control){
+        frame.addWindowListener(control);
+    } 
     
     public void initFrame(){
-        frame.setPreferredSize(screenDim);
-            frame.add(this);
-           
-            frame.setVisible(true);
-           
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+   
+        frame.add(this);
+
+        frame.setVisible(true);
+
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
     }
     
+    private Dinosaur dino;
+   
     @Override
     public void update(Observable o, Object arg) {
         
-        if (arg instanceof Preferences){
+        if (arg instanceof LinkedList){
             
-            out.println("GameGUI notified");
-
-            bgColor = ((Preferences) arg).getBgColour();
-            screenDim = ((Preferences) arg).getScreenDim();
-            
-            this.setBackground(bgColor);
-            initFrame();
-            repaint();
-            out.println("set visible");
-            
-        } else if (arg instanceof LinkedList){
-            if (!busy){
-                busy = true;
+              
                 tempFigs = (LinkedList<MoveableFigure>) arg;
                 out.println("refreshing frame");
 
@@ -138,11 +162,43 @@ public class GameGUI extends JPanel implements Observer {
                 busy = false;
                 //revalidate();
                 out.println("after calling repaint");
-            }
+           
+               
+        } else if (arg instanceof Dinosaur){
+            this.setFocusable(true);
+            this.requestFocus();
+            this.addKeyListener(new DinoController((Dinosaur) arg));
+            dino = (Dinosaur) arg;
+            this.initFrame();
+        }
+    }
+    private Image image;
+    
+    public void setImage(ImageIcon img) {
+        
+            this.img = img.getImage();
             
-        } 
+            //image = ImageIO.read(getClass().getResourceAsStream("src/img1.JPG"));
+            out.println("set image :" + image);
+            
+        
     }
     
+    public void promptQuit(){
+        int dialogResult;
+        dialogResult = JOptionPane.showConfirmDialog(this, "Would You Like to Save your Previous Note First?","Warning", JOptionPane.YES_NO_OPTION);
+        
+        if(dialogResult == JOptionPane.YES_OPTION){
+  // Saving code here
+            model.setGameOver(true);
+           
+        } else{
+            model.setInterrupted(false);
+            frame.dispose();
+        }
+        
+        
+    }
    
    
     
@@ -159,24 +215,11 @@ class ExitConfirmWindow extends JFrame{
     }
     
     
-    public void promptQuit(){
-        m.setInterrupted(true);
-        int dialogResult;
-        dialogResult = JOptionPane.showConfirmDialog(this, "Would You Like to Save your Previous Note First?","Warning", JOptionPane.YES_NO_OPTION);
-        
-        if(dialogResult == JOptionPane.YES_OPTION){
-  // Saving code here
-            m.setGameOver(true);
-           
-        } else{
-            m.setInterrupted(false);
-            this.dispose();
-        }
-        
-        
-    }
+    
   
 }
+
+
 
 
 

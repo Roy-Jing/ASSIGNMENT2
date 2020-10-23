@@ -13,7 +13,7 @@ public class Plant extends MoveableFigureBaseDecorator{
     Plant(MoveableFigure f){
         super(f);
         setNumPixels(3);
-        setVelocityX(-1);
+        setVelocityX(-1 * GameModel.getPixelSize());
        this.setOriginalForm(new int[][]{
         {1, 0, -1},
         { 0, 0, 0}

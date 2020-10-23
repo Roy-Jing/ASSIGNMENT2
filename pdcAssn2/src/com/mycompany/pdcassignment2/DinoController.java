@@ -36,14 +36,14 @@ public class DinoController implements KeyListener  {
     public void keyPressed(KeyEvent e) {
         out.println("pressed");
          
-        if (!keyHit){
+        if (!dino.isJumping()){
             char key = e.getKeyChar();
             
             switch (key) {
                 case 'w':
 
                     keyHit = true;
-                    dino.setVelocityY(-4);
+                    dino.setVelocityY(-4 * GameModel.getPixelSize());
                     dino.setLanded(false);
                     dino.isJumping(true);
                     if (dino.isHunched()){
@@ -63,7 +63,7 @@ public class DinoController implements KeyListener  {
                         if (!dino.isAccelerated()){
                            
                                 dino.setAccelerated(true);
-                                dino.setVelocityX(dino.getVelocityX() - 1);
+                                dino.setVelocityX(dino.getVelocityX() - 1 * GameModel.getPixelSize());
           
                         } 
                    
@@ -72,7 +72,7 @@ public class DinoController implements KeyListener  {
                     //out.print("Dino is hunched: " + dino.isHunched());
                     if (!(dino.isHunched())){
                         
-                        //out.print("hunching");
+                        out.print("hunching");
                         //dino.hunch(true);
                         dino.setHunched(true);
                         
@@ -84,7 +84,7 @@ public class DinoController implements KeyListener  {
                             
                             
                                //out.print("accelerating");
-                               dino.setVelocityX(dino.getVelocityX() + 1);
+                               dino.setVelocityX(dino.getVelocityX() + 1 * GameModel.getPixelSize());
                                
                                    dino.setAccelerated(true);
                         } 
@@ -132,11 +132,11 @@ public class DinoController implements KeyListener  {
                     dino.setAccelerated(false);
                     if (key == 'a')
 
-                        dino.setVelocityX(dino.getVelocityX() + 1);
+                        dino.setVelocityX(dino.getVelocityX() + 1 * GameModel.getPixelSize());
 
                     else
                         
-                        dino.setVelocityX(dino.getVelocityX() - 1);
+                        dino.setVelocityX(dino.getVelocityX() - 1 * GameModel.getPixelSize());
                 }
                
         }

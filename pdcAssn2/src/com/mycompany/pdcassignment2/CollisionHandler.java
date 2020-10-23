@@ -24,8 +24,7 @@ public abstract class CollisionHandler<F extends Figure> {
     }
     
     public abstract boolean checkForCollision();
-    
-        
+      
                
    
     public boolean willIntersect(){
@@ -40,6 +39,7 @@ public abstract class CollisionHandler<F extends Figure> {
                 && (dino.getFeetLocationY()+ dino.getVelocityY() - self.getCoordY()) >= 0;
         
     }
-    
+
+    public abstract boolean checkStillWithinFrame();
    
 }

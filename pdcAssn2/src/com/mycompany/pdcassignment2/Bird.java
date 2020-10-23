@@ -26,7 +26,7 @@ public class Bird extends Animal{
        setCoordX(GameModel.getFrameWidth() + 5);
        setCoordY(GameModel.getFrameHeight() - 8);
        setNumPixels(this.getAltForm()[0].length);
-       this.setVelocityX(-2);
+       this.setVelocityX(-2 * GameModel.getPixelSize());
        
      
     }

@@ -7,27 +7,33 @@ package com.mycompany.pdcassignment2;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.Random;
 
 /**
  *
  * @author Roy
  */
-public class Coin extends MoveableFigureBaseDecorator implements CollideableFigure{
+public class Coin extends MoveableFigureBaseDecorator{
     private int value;
    
     private Color color;
     private boolean isCollected = false;
     private int ovalWidth = 10;
     private int coinSize = 10;
-
+    private Random generator = new Random();
+    
     public int getCoinSize() {
         return coinSize;
     }
     private int spinDir = -1;
     Coin(MoveableFigure fig){
         super(fig);
-        figure.setCollisionHandler(new CoinCollisionHandler(figure));
+        figure.setCollisionHandler(new CoinCollisionHandler(this));
         color = Color.YELLOW;
+        
+        setCoordY(GameModel.getFrameHeight() - generator.nextInt(10));
+        setCoordX(GameModel.getFrameWidth()  - ovalWidth);
+        
         
     }
     
@@ -47,16 +53,19 @@ public class Coin extends MoveableFigureBaseDecorator implements CollideableFigu
     public void drawSelf(Graphics g){
         g.setColor(color);
         
-        g.fillOval(super.getCoordX(), super.getCoordY(), ovalWidth , coinSize--);
+        g.fillOval(super.getCoordX(), super.getCoordY(), ovalWidth , coinSize);
         
         spin();
         
     }
-
-    @Override
-    public void setRightMostCoordX(int c) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+    public MoveableFigure getNewFigure(){
+        return new Coin(new MoveableObject("Coin"));
+        
+        
     }
+
+   
 
     
 
@@ -64,14 +73,22 @@ public class Coin extends MoveableFigureBaseDecorator implements CollideableFigu
     
 }
 
-class CoinCollisionHandler extends CollideableCollisionHandler{
+class CoinCollisionHandler extends MoveableCollisionHandler{
     
-    CoinCollisionHandler(Figure f){
-        super(f);
-    }
-    public void handleCollision(){
+    CoinCollisionHandler(Coin c){
+        super(c);
+       
         
     }
+    public void handleCollision(){
+        GameModel.addCoin();
+       
+        
+        ((Coin)self).setActive(false);
+        
+    }
+    
+    
     public boolean checkForCollision() {
         int[][] dinoMatrix = dino.getOriginalForm();
         
@@ -81,7 +98,7 @@ class CoinCollisionHandler extends CollideableCollisionHandler{
             int cy = dinoMatrix[0][i];
             
             if (Math.sqrt((Math.pow((cx - self.getCoordX()), 2.0) +
-                    (Math.pow((cy - self.getCoordY()), 2.0)))) < (((Coin) self).getCoinSize() / 2)){
+                    (Math.pow((cy - ((Coin)self).getCoordY()), 2.0)))) < ((Coin)self).getCoinSize() / 2){
                 return true;
             }
         }

@@ -19,7 +19,7 @@ class Dinosaur extends Animal{
     private boolean previouslyHunched = false;
     private boolean hunched = false;
     private volatile boolean isJumping = false;
-    
+    private char[][] virtualGUI;
   
     public boolean isJumping() {
         return isJumping;
@@ -86,25 +86,39 @@ class Dinosaur extends Animal{
     }
     
     public void movePart(){
+        
+        if (!this.isJumping){
+            this.hunch(hunched);
+            
+        }
         if (this.shouldMovePart){
+            
             super.movePart();
+            
+            
         } 
     }
     public void moveForward(){
         
     }
     
+    public char[][] getVirtualGUI(){
+        return virtualGUI;
+    }
+    
+    
+    
     public void jump(){
         out.println("jumping");
         
-        this.setVelocityY(this.getVelocityY() + 1);
+        this.setVelocityY(this.getVelocityY() + 1 * GameModel.getPixelSize());
     }
     
 
     
     public void hunch(boolean toHunch){
-        int[][] original = this.getOriginalForm();
-        int[][] alt = this.getAltForm();
+       
+        out.println("hunching");
         
         if (toHunch && !previouslyHunched){
             super.getAltForm()[0][neckIndexX1]      =        
@@ -123,6 +137,55 @@ class Dinosaur extends Animal{
                 previouslyHunched = false;
         }
     }
+    
+    public void initaliseVirtualGUI(){
+        virtualGUI = new char[GameModel.getFrameHeight()][GameModel.getFrameWidth()];
+        
+        int[][] coordMat = getOriginalForm();
+        int dinoCoordX = getCoordX();
+        int dinoCoordY = getCoordY();
+        for (int i = 0; i < getNumPixels(); i++){
+            int cX = coordMat[1][i] ;
+            int cY = coordMat[0][i];
+            
+            virtualGUI[cY + dinoCoordY][cX + dinoCoordX] = '!';
+            
+        }
+    }
+    public void updateVirtualGUI(){
+        int velocityX =  getVelocityX();
+        int velocityY = getVelocityY();
+        int coordY = getCoordY();
+        int coordX = getCoordX();
+        
+        int startPos = 0, shiftDir = 0, endPos = 0;
+        if (velocityX != 0 || velocityY != 0){
+       if (velocityX > 0 || velocityY > 0){
+           startPos = getNumPixels() - 1;
+           shiftDir = -1;
+           endPos = -1;
+       } else if (velocityX <= 0 || velocityY < 0){
+           startPos = 0;
+           shiftDir = 1;
+           endPos = getNumPixels();
+           
+       } 
+     
+            int form[][] = getOriginalForm();
+            
+            for (int i = startPos; i != endPos; i+= shiftDir){
+                int cY = form[0][i] + coordY;
+                int cX = form[1][i] + coordX;
+                
+                virtualGUI[cY][cX] =  ' ';
+                virtualGUI[cY + velocityY][cX + velocityX] = '!';
+               
+            }
+            
+        
+        }
+    }
+    
     
     @Override
     public void doRun(){
@@ -160,8 +223,9 @@ class Dinosaur extends Animal{
         
         
         super(fig);
-        setCoordY(GameModel.getFrameHeight() - 5); //coord Y is body line
+        setCoordY(GameModel.getFrameHeight() - 4); //coord Y is body line
         setCoordX(5);
+        this.initaliseVirtualGUI();
         
         setAltForm(new int[][]{
             {0, 1,  2,  1, 3, 1,  1, 2, 0, 3, -1},//first pair is tail
@@ -198,22 +262,23 @@ class Dinosaur extends Animal{
         //we don't want the dinosaur to shift outside the frame,
         //so the wise thing to do is to readjust its velocityX 
         //so that it doesn't
-        
+        int frameHeight = GameModel.getFrameHeight();
+        int frameWidth = GameModel.getFrameWidth();
         //check left edge of frame.
-        if (this.getCoordX() + this.getVelocityX() < 0){
+        if (this.getCoordX() + this.getVelocityX() < 0 ){
              this.setVelocityX(-this.getCoordX());
              this.setAccelerated(false);
         }
         
-        //check right edge of frame.
-        else if (getRightMostCoordX() + this.getVelocityX() >= GameModel.getFrameWidth()){
-            this.setVelocityX(GameModel.getFrameWidth() - this.getRightMostCoordX() - 1);
+        //check r edge of frame.
+        else if (getRightMostCoordX() + this.getVelocityX() >= frameWidth){
+            this.setVelocityX(frameWidth - this.getRightMostCoordX() - 1);
             this.setAccelerated(false);
 
         }
         
-        if (isJumping && getFeetLocationY() + this.getVelocityY() >= GameModel.getFrameHeight()){
-            this.setVelocityY(GameModel.getFrameHeight() - this.getFeetLocationY() - 1);
+        if (getFeetLocationY() + this.getVelocityY() >= frameHeight){
+            this.setVelocityY(frameHeight - this.getFeetLocationY() - 1);
             out.println("dino not jumping");
             
             this.isJumping(false);

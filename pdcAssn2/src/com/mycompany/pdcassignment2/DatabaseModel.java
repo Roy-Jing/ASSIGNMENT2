@@ -5,6 +5,10 @@ package com.mycompany.pdcassignment2;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.FilenameFilter;
 import static java.lang.System.out;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -17,8 +21,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Random;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 
 /**
  * @author Quan Bai and Weihua Li
@@ -65,6 +75,26 @@ public class DatabaseModel {
         this.data = data;
     }
     
+    
+    public void reset(){
+        try {
+            ResultSet rs;
+            DatabaseMetaData meta = conn.getMetaData();
+            Statement stmt = conn.createStatement();
+            
+            rs = meta.getTables(null, null, null, new String[]{"TABLE"}); 
+            while (rs.next()){
+                
+                out.println(rs.getString("TABLE_NAME"));
+                
+                stmt.executeUpdate("DROP TABLE " + rs.getString("TABLE_NAME"));
+                
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseModel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public DatabaseModel() {
         
         establishConnection();
@@ -72,31 +102,6 @@ public class DatabaseModel {
             initialiseTables();
             firstTime = true;
         }
-    }
-    
-
-    public Preferences getPreference( ){
-        Statement stmt;
-        if (!firstTime)
-            try {
-
-                stmt = conn.createStatement();
-                 ResultSet rs = this.myQuery("SELECT * FROM SETTINGS");
-                 rs.last();
-                Preferences pf = new Preferences(false);
-                pf.setScreenDim(new Dimension(rs.getInt("SCREENWIDTH"), rs.getInt("SCREENHEIGHT")));
-                pf.setBgColour(new Color(rs.getInt("BGCOLOR")));
-                return pf;
-            } catch (SQLException ex) {
-
-            }
-       
-                
-                
-        return null;
-         
-
-        
     }
     
    
@@ -115,8 +120,7 @@ public class DatabaseModel {
                 System.out.println(URL + "   CONNECTED....");
                 
             } catch (SQLException ex) {
-                System.out.println(ex.getMessage());
-
+                    ex.printStackTrace();
             }
         }
     }
@@ -131,7 +135,10 @@ public class DatabaseModel {
             }
         }
     }
-
+    
+    public boolean checkForDuplicate(String username){
+        return myQuery("SELECT * FROM USERS WHERE USERNAME = " + username) != null;
+    }
     public ResultSet myQuery(String sql) {
 
         Connection connection = this.conn;
@@ -142,8 +149,7 @@ public class DatabaseModel {
             statement = connection.createStatement();
             resultSet = statement.executeQuery(sql);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
         }
         return resultSet;
     }
@@ -157,25 +163,62 @@ public class DatabaseModel {
         try {
             statement = connection.createStatement();
             statement.executeUpdate(sql);
-
+     
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
+    public LinkedHashSet<String> loadPreviousPrefsOf(String username){
+        LinkedHashSet<String> prefs = new LinkedHashSet();
+
+        try {
+            ResultSet rs;
+            
+            int i = 0;
+            
+            rs = myQuery("SELECT * FROM SETTINGS WHERE USERNAME = " + username);
+            while (rs.next()){
+                int screenWidth = rs.getInt("SCREENWIDTH");
+                int screenHeight = rs.getInt("SCREENHEIGHT");
+                String diffLevel = rs.getString("GAME_DIFFICULTY");
+                String imgName = rs.getString("IMG_NAME");
+                
+                prefs.add("" + screenWidth + " x " + screenHeight + "|" + diffLevel + "|" + imgName);
+                
+            }
+        } catch (SQLException ex) {
+            out.println("Error getting prefs!");
+        }
+        
+        return prefs;
+        
+    }
     
-    public void createUser(String name, String pswd){
+    public boolean createUser(String name, String pswd){
        
         try {
             Statement stmt = conn.createStatement();
-            stmt.executeUpdate("INSERT INTO USERS (" + name + ", " + pswd + ")");
+            
+            if (myQuery("SELECT * FROM USERS WHERE USERNAME = " + name) == null){
+                stmt.executeUpdate("INSERT INTO USERS VALUES(" + name + ", " + pswd + ")");
+
+            } else{
+                out.println("duplicate user");
+                
+                return false;
+            }
+            
+            return true;
+            
         } catch (SQLException ex) {
             out.println("cannot create user");
+            return false;
         }
     }
     
     
-    private boolean checkTableExisting(String newTableName) {
+    public boolean checkTableExisting(String newTableName) {
         boolean flag = false;
         try {
 
@@ -183,32 +226,33 @@ public class DatabaseModel {
             String[] types = {"TABLE"};
             DatabaseMetaData dbmd = conn.getMetaData();
             
-            ResultSet rsDBMeta = dbmd.getTables(null, null, "%", types);//types);
-            
-          Statement stmt = conn.createStatement();
-          
-            //Statement dropStatement=null;
-            
-            while (rsDBMeta.next()) {
-                String tableName = rsDBMeta.getString("TABLE_NAME");
-                stmt.executeUpdate("DROP table " + tableName);
-//                
-//                if (tableName.compareToIgnoreCase(newTableName) == 0) {
-//                    System.out.println(tableName + "  is there");
-//                    flag = true;
+            try (ResultSet rsDBMeta = dbmd.getTables(null, null, null, types) //types);
+            ) {
+                Statement stmt = conn.createStatement();
                 
+                //Statement dropStatement=null;
+                
+                while (rsDBMeta.next()) {
+                    String tableName = rsDBMeta.getString("TABLE_NAME");
+                    //stmt.executeUpdate("DROP table " + tableName);
+//
+                    if (tableName.compareToIgnoreCase(newTableName) == 0) {
+                        System.out.println(tableName + "  is there");
+                        flag = true;
+                    }
+
+                }
             }
-            rsDBMeta.close();
         } catch (SQLException ex) { return false;}
-        return false;
+        return flag;
 }
     
     public void initialiseTables(){
         try{
         Statement stmt = conn.createStatement();
         
-        //stmt.addBatch("CREATE TABLE USERS (USERNAME VARCHAR(10), PSWD VARCHAR(10))");
-        stmt.executeUpdate("CREATE TABLE SETTINGS (SCREENWIDTH INT, SCREENHEIGHT INT, GAME_DIFFICULTY CHAR)");
+        stmt.executeUpdate("CREATE TABLE USERS (USERNAME VARCHAR(10), PSWD VARCHAR(10))");
+        stmt.executeUpdate("CREATE TABLE SETTINGS (SCREENWIDTH INT, SCREENHEIGHT INT, GAME_DIFFICULTY CHAR, IMG_NAME VARCHAR(10), USERNAME VARCHAR(10))");
         //need a time played date, high score, coins collected, highestScore
         stmt.executeUpdate("CREATE TABLE SCORE_INFO (HIGHESTSCORE INT, CURRENT_SCORE INT, COINS_COLLECTED INT, TIME_STAMP VARCHAR(20))");
     
@@ -242,17 +286,33 @@ public class DatabaseModel {
             }
     }
    
+    public boolean verifyCredentials(String name, String password){
+        ResultSet rs;
+        String s = null;
+        
+        if ((rs = myQuery("SELECT * FROM USERS WHERE USERNAME = " + name + " AND PASSWORD = " + password)) != null){
+            try {
+                s = rs.getString("USERNAME")  + rs.getString("PASSWORD");
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseModel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            out.println(s);
     
+            return true;
+        }
+        return false;
+        
+    }
     
     public boolean login(String name, String password){
         
             try{
-                if (USER_NAME.equals(name) && PASSWORD.equals(password)){
                     conn = DriverManager.getConnection("jdbc:derby:GameDB;create=true", "pdc", "pdc");
-                    return true;
-                }
-                else
-                    return false;
+                    if (this.verifyCredentials(name, password))
+                        return true;
+                     else
+                        throw new SQLException("invalid login");
+                    
                
             } catch (SQLException e){
                 out.println("cannot create connection");
@@ -262,6 +322,7 @@ public class DatabaseModel {
             
     }
 }
+
     
             
        
@@ -282,48 +343,69 @@ class Data{
 
 
 class Preferences{
-    private Dimension screenDim;
-    private Color bgColour;
-    private String diffLevel;
-    
-    public String getDifficulty(){
-        return diffLevel;
-    }
-    public void setDifficulty(String d){
-        diffLevel = d;
-    }
-    public String getDiffLevel() {
-        return diffLevel;
-    }
-
-    public void setDiffLevel(String diffLevel) {
+    public Dimension screenDim;
+    public ImageIcon bgImage;
+    public String diffLevel;
+    Preferences(int dimWidth, int dimHeight, String imgName, String diffLevel){
+        screenDim = new Dimension(dimWidth, dimHeight);
+        bgImage = new ImageIcon(imgName);
         this.diffLevel = diffLevel;
     }
     
     
-    public Preferences(boolean useDefault){
-        if (useDefault){
-            screenDim = new Dimension(100, 50);
-             bgColour =  Color.WHITE;
-             
-        }
-    }
-    public Dimension getScreenDim() {
-        return screenDim;
-    }
-
-    public void setScreenDim(Dimension screenDim) {
-        this.screenDim = screenDim;
-    }
-
-    public Color getBgColour() {
-        return bgColour;
-    }
-
-    public void setBgColour(Color bgColour) {
-        this.bgColour = bgColour;
+    Preferences(int dimWidth, int dimHeight, ImageIcon imgName, String diffLevel){
+        screenDim = new Dimension(dimWidth, dimHeight);
+        bgImage = imgName;
+        //Toolkit.getDefaultToolkit().getImage(imgName);
+        this.diffLevel = diffLevel;
     }
     
+    public String unpack(){
+        String displayString = screenDim.width + ", " + screenDim.height + "|" + bgImage + "|" + diffLevel;
+        return displayString;
+        
+    }
+    
+    public static Preferences pack(String prefString){
+        String prefs[] = prefString.split("|");
+        int width = Integer.parseInt(prefs[0]);
+        int height = Integer.parseInt(prefs[1]);
+        String imgName =prefs[2];
+        String diffLevel = prefs[3];
+        
+        return new Preferences(width, height, imgName, diffLevel);
+        
+    }
+    
+    public Preferences(){
+        
+        
+        screenDim = new Dimension(100, 50);
+        bgImage = getDefaultImg();
+        diffLevel = "1";
+        
+    }
+    
+    public ImageIcon getDefaultImg(){
+        File homeDir = new File("src");
+        File[] images = homeDir.listFiles(new FilenameFilter(){
+            public boolean accept(File dir, String name){
+                if (name.endsWith(".jpg"))
+                    return true;
+                return false;
+                
+            }
+        });
+       
+        String randImageName = images[new Random().nextInt(images.length)].getName();
+        
+        return new ImageIcon(randImageName);
+        
+        
+               
+        
+        
+    }
     public String toString(){
         return "" + screenDim;
         

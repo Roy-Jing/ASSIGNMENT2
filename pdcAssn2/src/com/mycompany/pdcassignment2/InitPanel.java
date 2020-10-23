@@ -12,6 +12,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -39,9 +40,7 @@ import javax.swing.JTextField;
  */
 public class InitPanel extends JPanel implements Observer {
     private JButton loginButton;
-    private JFrame parentFrame;
-    private JComboBox diffSelection;
-    
+    private JFrame parentFrame;    
     public JButton getLoginButton() {
         return loginButton;
     }
@@ -74,10 +73,7 @@ public class InitPanel extends JPanel implements Observer {
     private JTextField passwordField;
     private JButton nextButton;
     private JButton createNewUserBtn = new JButton("create user");
-    private JComboBox screenDimSelection;
-    private JComboBox bgSelection;
     private JButton confirmBtn;
-    private JPanel promptWindow;
     public JButton getConfirmBtn() {
         
         return confirmBtn;
@@ -86,16 +82,16 @@ public class InitPanel extends JPanel implements Observer {
     public void setConfirmBtn(JButton confirmBtn) {
         this.confirmBtn = confirmBtn;
     }
-    JButton yes = new JButton("Yes");
+    JButton usePrevious = new JButton("Yes");
 
-    public JButton getYes() {
-        return yes;
+    public JButton usePrevious() {
+        return usePrevious;
     }
 
-    public JButton getNo() {
-        return no;
+    public JButton dontUsePrevious() {
+        return dontUsePrevious;
     }
-        JButton no = new JButton("No, use default settings");
+        JButton dontUsePrevious = new JButton("dontUsePrevious, use default settings");
     public JButton getCreateNewUserBtn() {
         return createNewUserBtn;
     }
@@ -105,33 +101,28 @@ public class InitPanel extends JPanel implements Observer {
     private GridBagConstraints gbc = new GridBagConstraints();
     private JScrollPane messagePane;
     private InitPanelController controller;
-    private GameModel gameModel;
 
-    public void setGameModel(GameModel gameModel) {
-        this.gameModel = gameModel;
-    }
-    
-    
     public void askForUsingPreviousSetting(){
         //GameModel's preferences at this point is not null.
         this.removeAll();
         out.println("ask for using previos");
         
         //promptWindow = new JPanel();
-        yes.addActionListener(controller);
+        usePrevious.addActionListener(controller);
         //this.add(promptWindow);
-        
+        //fillSettings()
+       
         this.setLayout(new BoxLayout( this, BoxLayout.Y_AXIS));
         
         JLabel message = new JLabel("Previous settings exist, would you like to use them?");
-      
+        
         JPanel buttonPanel = new JPanel();
         
-        buttonPanel.add(yes);
-        buttonPanel.add(no);
+        buttonPanel.add(usePrevious);
+        buttonPanel.add(dontUsePrevious);
         
-        yes.addActionListener(controller);
-        no.addActionListener(controller);
+        usePrevious.addActionListener(controller);
+        dontUsePrevious.addActionListener(controller);
         
         add(message);
         add(buttonPanel);
@@ -160,8 +151,8 @@ public class InitPanel extends JPanel implements Observer {
         loginButton.addActionListener(controller);
         
         
+        
     }
-    
     public static void main(String args[]){
         //if preferences is null (non-existent0
             //bring user to preferences menu
@@ -169,32 +160,58 @@ public class InitPanel extends JPanel implements Observer {
           
         //JFrame f = new JFrame();
         //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        InitPanel p = new InitPanel();
+        InitPanel initPanel = new InitPanel();
         
-        
-        InitPanelController controller = new InitPanelController();
+       
         GameGUI gameGUI = new GameGUI();
+        DatabaseModel dbM = new DatabaseModel();
+        
+        
         
         GameModel gM = new GameModel();
-      
-        gM.addObserver(p);
-        controller.addModel(gM);
-        controller.addView(p);
-        
-        p.addController(controller);
+        gM.addObserver(initPanel);
         gM.addObserver(gameGUI);
-        //f.add(p);
+        
+        
+        InitPanelController initController = new InitPanelController();
+        
+        InitPanelModel initModel = new InitPanelModel();
+        initPanel.addController(initController);
+        initModel.addObserver(initPanel);
+        initModel.setDbM(dbM);
+         SettingSelectionWindow settingsWindow = new SettingSelectionWindow();
+        SettingSelectionController settingController = new SettingSelectionController();
+        settingsWindow.setController(settingController);
+        
+         SettingSelectionModel settingsModel = new SettingSelectionModel();
+        settingsModel.setDbM(dbM);
+        settingsModel.addObserver(gameGUI);
+        settingsModel.addObserver(settingsWindow);
+       
+        settingController.addModel(gM);
+        settingController.addModel(settingsModel);
+        settingController.addView(settingsWindow);
+        settingController.setGUI(gameGUI);
+        
+        initController.addModel(initModel);
+        initController.addView(initPanel);
+        initController.addModel(settingsModel);
+        
+        GameController gameController = new GameController();
+        gameController.addView(gameGUI);
+        gameController.addModel(gM);
+        gameGUI.addController(gameController);
+        
+       
+        //dbM.reset();
+        initModel.init();
+       
+        
+        
+        
+       
+        
       
-        gM.init();
-        
-                
-        
-   
-        //p.dispTips();
-        //f.setVisible(true);
-        
-        
-        
        
     }
     
@@ -202,7 +219,7 @@ public class InitPanel extends JPanel implements Observer {
         controller = (InitPanelController) listener;
     }
    
-    
+   
     public void dispTips(){
         
         JTextArea text = 
@@ -246,8 +263,7 @@ public class InitPanel extends JPanel implements Observer {
           
         nextButton.addActionListener(controller);
           
-        gbc.gridx = gbc.gridy = 2;
-        add(nextButton);
+        addAt(2, 2, nextButton );
         
     }
     
@@ -256,109 +272,82 @@ public class InitPanel extends JPanel implements Observer {
     public JButton getConfirmSelectionBtn() {
         return confirmSelectionBtn;
     }
-    public void askForPreferences(){
-        diffSelection = new JComboBox();
-        
-        bgSelection = new JComboBox();
-        this.screenDimSelection = new JComboBox();
-        
-        bgSelection.addItem(Color.WHITE);
-        bgSelection.addItem(Color.GREEN);
-        bgSelection.setSelectedIndex(0);
-        this.screenDimSelection.addItem(new Dimension(100, 50));
-                this.screenDimSelection.addItem(new Dimension(200, 100));;
-                this.screenDimSelection.addItem(new Dimension(250, 100));
-        screenDimSelection.setSelectedIndex(0);
-        removeAll();
-        diffSelection.addItem("Easy");
-        diffSelection.addItem("Medium");
-        diffSelection.addItem("Hard");
-        
-        this.setLayout(new GridLayout(2, 4));
-        
-        this.add(new JLabel("Select a background colour"));
-        this.add(bgSelection);
-        
-        this.add(new JLabel("Select a screen dimension"));
-        this.add(screenDimSelection);
-        
-        this.add(this.confirmSelectionBtn);
-        
-        this.add(new JLabel("Select a difficulty"));
-        this.add(diffSelection);
-        
-        
-        confirmSelectionBtn.addActionListener(controller);
-        this.repaint();
-        this.revalidate();
-        
-        
-    }
+   
     public void displayError(String errMessage){
+        out.println("displaying error");
         
         JOptionPane.showMessageDialog(this, errMessage, "ERROR",
                         JOptionPane.ERROR_MESSAGE);
         
     }
 
-    public Preferences collectPreferences(){
-        Preferences collected = new Preferences(true);
-        collected.setBgColour((Color)this.bgSelection.getSelectedItem());
-        //collected.setDifficulty(diffSelection.getSelectedItem());
-        
-        collected.setScreenDim((Dimension)this.screenDimSelection.getSelectedItem());
-        
-        return collected;
-        
-    }
-    
     
     @Override
     public void update(Observable o, Object arg) {
         
         //init() in GameModel will set arg to null
         if (arg instanceof Boolean){
+            
+           
             this.parentFrame = new JFrame("Init Panel");
             parentFrame.add(this);
             parentFrame.setVisible(true);
-            
-            out.println("updating initpanel");
             
             boolean prevExist = (boolean) arg;
             if (!prevExist)
                 dispTips();
             else{ 
-                //this.printWelcomeBack();
-            
-                this.askForUsingPreviousSetting();
+                this.bringToLogin(true);
+                
+                //this.askForUsingPreviousSetting();
             }
+        } else if (arg instanceof Error){
+            
+            this.displayError(((Error) arg).errMsg);
         }
             
        
     }
     
-    private void addAt(int x, int y, JComponent comp){
+    private void addAt(int x, int y, JComponent comp, int ...width){
+        
+        
         gbc.gridx = x;
         gbc.gridy = y;
+        if (width.length != 0)
+            gbc.gridwidth = width[0];
+        else
+            gbc.gridwidth = 5;
+        
         this.add(comp, gbc);
         
     }
     
-    public void bringToLogin(){
+    
+  
+    public void bringToLogin(boolean canLogin){
         
-        removeAll(); 
+        this.removeAll();
         this.setLayout(new GridBagLayout());
-        addAt(1, 0, new JLabel("Username"));
         
-        addAt(1,1, getUsernameField());
+        addAt(1, 1, new JLabel("Username"));
         
-        addAt(1, 0, new JLabel("Password"));
+        addAt(1, 2,  usernameField);
         
-        addAt(4, 1, getPasswordField());
-
-        addAt(4, 3, getLoginButton());
-        out.println(controller);
-        loginButton.addActionListener(controller);
+        addAt(10, 1, new JLabel("Password"));
+        
+        addAt(10, 2, passwordField);
+     
+        addAt(10, 4, loginButton);
+        
+        if (canLogin){
+            loginButton.addActionListener(controller);
+        } else{
+            loginButton.setEnabled(false);
+        }
+      
+        addAt(3, 3, this.createNewUserBtn);
+        createNewUserBtn.addActionListener(controller);
         
         repaint();
         revalidate();

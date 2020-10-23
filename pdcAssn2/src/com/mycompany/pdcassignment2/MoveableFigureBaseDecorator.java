@@ -28,6 +28,7 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
     }
     
     public boolean isActive(){
+    
         return figure.isActive();
     }
   
@@ -41,7 +42,7 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
     }
     MoveableFigureBaseDecorator(MoveableFigure f){
         figure = f;
-        this.setCollisionHandler(new MoveableCollisionHandler(figure));
+        setCollisionHandler(new MoveableCollisionHandler(this));
     }
     
     public void doRun(){
@@ -76,6 +77,12 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
     @Override
     public int getCoordX(){
         return figure.getCoordX();
+    }
+    
+    
+    
+    public String getid(){
+        return figure.getid();
     }
     @Override
     public void setCoordX(int coordX){

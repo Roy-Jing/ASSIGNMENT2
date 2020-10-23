@@ -9,6 +9,6 @@ package com.mycompany.pdcassignment2;
  *
  * @author Roy
  */
-public class QuitPanel {
+public class WelcomeWindow {
     
 }

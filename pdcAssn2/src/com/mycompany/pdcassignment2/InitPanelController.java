@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 package com.mycompany.pdcassignment2;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -19,60 +18,86 @@ import javax.swing.SwingUtilities;
  */
 
 class InitPanelController implements ActionListener{
-        InitPanel p;
-        GameModel m;
-        //InitPanelModel initMod;
+        private InitPanel p;
+        private InitPanelModel initModel;
+        private SettingSelectionModel settingsModel;
+        //private SettingSelectionWindow settingsWind;
+        //game model is unnecessary
+    public void setInitModel(InitPanelModel initModel) {
+        this.initModel = initModel;
+    }
+
+    public void setSettingsModel(SettingSelectionModel settingsModel) {
+        this.settingsModel = settingsModel;
+    }
         
+  
+        
+        //InitPanelModel initMod;
+//        public void addView(SettingSelectionWindow settingsWind){
+//            this.settingsWind = settingsWind;
+//            
+//        }
         
         public void addView(InitPanel p){
             this.p = p;
         }
         
-        public void addModel(GameModel m){
-            this.m = m;
+        public void addModel(InitPanelModel m){
+            this.initModel = m;
         }
+        
+        public void addModel(SettingSelectionModel m){
+            this.settingsModel = m;
+        }
+        
         
         
         @Override
         public void actionPerformed(ActionEvent e) {
             JComponent src = (JComponent) e.getSource();
             if (src == p.getNextButton()){
-                p.bringToLogin();
+                
+                p.bringToLogin(false);
+                
             } else if (src == p.getLoginButton()){
+                if (initModel.login(p.getUsernameField().getText(), p.getPasswordField().getText())){
+                    p.askForUsingPreviousSetting();
+                }
+                    
                 
+            } else if (src == p.usePrevious()){
                 
-                //m.init();
-                p.askForUsingPreviousSetting();
-                
-            } else if (src == p.getCreateNewUserBtn()){
-                out.println("create user");
-                
-            
-            }else if (src == p.getYes()){
-                m.useDefaultSetting(false);
-                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
+                settingsModel.loadPreviousSetting();
+                SwingUtilities.getWindowAncestor(p).dispose();
 
-                topFrame.dispose();
                 
                
-            } else if (src == p.getNo()){
-                p.askForPreferences();
+            } 
+            //ask for using previous setting
+            else if (src == p.dontUsePrevious()){
+                settingsModel.loadPreviousSetting();
+                //settingsWind.bringToNewPreferenceSelection();
                 //JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
 
                 //topFrame.dispose();
                 //parent.dispatchEvent(new WindowEvent(parent, WindowEvent.WINDOW_CLOSING));
 
-            } else if (src == p.getConfirmSelectionBtn()){
-                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
+            
+            } else if (src == p.getCreateNewUserBtn()){
+                if (initModel.createUser(p.getUsernameField().getText(), p.getPasswordField().getText())){
+                    settingsModel.loadDefaultSetting();
+                    //settingsWind.bringToNewPreferenceSelection();
+                }
 
-                topFrame.dispose();
-                m.setPreferences(p.collectPreferences());
-                m.useDefaultSetting(false);
-            }
+            } 
             
         }
         
         
 }
+
+
+
 
 

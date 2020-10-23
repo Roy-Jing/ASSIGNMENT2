@@ -29,6 +29,10 @@ public class CollideableCollisionHandler extends CollisionHandler{
         
     }
     
+    public boolean checkStillWithinFrame(){
+        return true;
+        
+    }
     public boolean checkForCollision(){
         
         
@@ -39,7 +43,6 @@ public class CollideableCollisionHandler extends CollisionHandler{
         if (dVelocityY < 0 )
             return false;
         
-        int feetLocationY = dino.getFeetLocationY();
         //use the utility method willIntersect(int) to determine when the Dinosaur will
         //dino's feet y coordinate plus its velocity will intersect the collider's
         //"boundary coord", namely the collider's y coordinate closest to top of

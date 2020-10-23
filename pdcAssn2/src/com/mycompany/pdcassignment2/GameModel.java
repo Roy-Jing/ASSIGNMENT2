@@ -19,6 +19,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 /**
  *
@@ -35,7 +36,9 @@ public class GameModel extends Observable implements Runnable{
     public boolean isInterrupted() {
         return interrupted;
     }
-
+    
+ 
+    
     public void setInterrupted(boolean interrupted) {
         this.interrupted = interrupted;
     }
@@ -53,7 +56,6 @@ public class GameModel extends Observable implements Runnable{
     private Preferences preferences;
     private static boolean reset = false;
     private static volatile boolean drawing = false;
-    private static char[][] virtualGUI;
     
     public static boolean isDrawing() {
         return drawing;
@@ -73,6 +75,11 @@ public class GameModel extends Observable implements Runnable{
     public static boolean reset(){
         return reset;
         
+    }
+    
+    public void init(){
+        
+        new Thread(this).start();
     }
     public void setPreferences(Preferences preferences) {
         this.preferences = preferences;
@@ -158,80 +165,17 @@ public class GameModel extends Observable implements Runnable{
         
         return false;
     }
-    
-    public static int[][] copy(int[][] from){
-        int len = from[0].length;
-        
-        int[][] to = new int[2][len];
-        System.arraycopy(from[0], 0, to[0], 0, len);
-        System.arraycopy(from[1], 0, to[1], 0, len);
-        return to;
+
+    public Preferences getPrevUserPrefs(){
+        return preferences;
     }
-    
  
     
-    public void init(){
-        
-        dbM = new DatabaseModel();
-        Boolean prevExist;
-        
-        if ((preferences = dbM.getPreference()) != null){
-            userData = dbM.getData();
-            prevExist = true;
-        } else
-            prevExist = false;
-        //preferences can be null
-        this.setChanged();
-        this.notifyObservers(prevExist);
-           
-       
-        //this.setChanged();
-        //this.notifyObservers(null);
-
-    }
+    
     
    
     
-    public void useDefaultSetting(boolean useDefault){
-        
-        if (useDefault){
-            
-            preferences = new Preferences(true);
-            
-        } else if (preferences == null){
-            //has no previous 
-            //does not use default
-            out.println("shouldn't be printed");
-            preferences = new Preferences(true);
-        }
-        
-        //this.refreshFrame();
-        new Thread(this).start();
-        //this.setChanged();
-        //notify gamegui
-        //this.notifyObservers(preferences);
-        
-    }
-        
-    public void removeInactiveFigures(){
-        
-        synchronized (figs){
-            Iterator<MoveableFigure> it = figs.iterator();
-                
-                //it.next();
-                while (it.hasNext()){
-                    MoveableFigure f = it.next();
-                    if (!f.isActive()){
-                        out.println("removed");
-                        //this.numCurrentFigs--;
-                        it.remove();
-                    }
-                }
-            
-        }
-        
-    }
-    
+  
     public void setDim(Dimension d){
         setFrameHeight(d.height);
         setFrameWidth(d.width);
@@ -270,59 +214,6 @@ public class GameModel extends Observable implements Runnable{
         return figs.size();
     }
     
-    private Dinosaur d;
-    
-    public static char[][] getVirtualGUI(){
-        return virtualGUI;
-    }
-    
-    public void initaliseVirtualGUI(){
-        virtualGUI = new char[frameHeight][frameWidth];
-        
-        int[][] coordMat = d.getOriginalForm();
-        int dinoCoordX = d.getCoordX();
-        int dinoCoordY = d.getCoordY();
-        for (int i = 0; i < d.getNumPixels(); i++){
-            int cX = coordMat[1][i] ;
-            int cY = coordMat[0][i];
-            
-            virtualGUI[cY + dinoCoordY][cX + dinoCoordX] = '!';
-            
-        }
-    }
-    public void updateVirtualGUI(){
-        int velocityX =  d.getVelocityX();
-        int velocityY = d.getVelocityY();
-        int coordY = d.getCoordY();
-        int coordX = d.getCoordX();
-        
-        int startPos = 0, shiftDir = 0, endPos = 0;
-        if (velocityX != 0 || velocityY != 0){
-       if (velocityX > 0 || velocityY > 0){
-           startPos = d.getNumPixels() - 1;
-           shiftDir = -1;
-           endPos = -1;
-       } else if (velocityX <= 0 || velocityY < 0){
-           startPos = 0;
-           shiftDir = 1;
-           endPos = d.getNumPixels();
-           
-       } 
-     
-            int form[][] = d.getOriginalForm();
-            
-            for (int i = startPos; i != endPos; i+= shiftDir){
-                int cY = form[0][i] + coordY;
-                int cX = form[1][i] + coordX;
-                
-                virtualGUI[cY][cX] =  ' ';
-                virtualGUI[cY + velocityY][cX + velocityX] = '!';
-               
-            }
-            
-        
-        }
-    }
     
     public static boolean isGameOver(){
         return gameOver;
@@ -330,20 +221,25 @@ public class GameModel extends Observable implements Runnable{
     Deque<MoveableFigure> figs = new LinkedList();
     public void initDino(){
         
-        d = new Dinosaur(new MoveableObject("Dino"));
+        Dinosaur d = new Dinosaur(new MoveableObject("Dino"));
         d.addModel(this);
-        figs.add(d);
+        //figs.add(d);
    
         setChanged();
         
         
         notifyObservers(d);
-        initaliseVirtualGUI();
+        
         CollisionHandler.addDino(d);
     }
     
     private Data userData;
     
+    public static void setDimensions(Dimension d){
+        frameHeight = d.height;
+        frameWidth = d.width;
+      
+    }
     public void generateNewFigures(){
         int numValues =  MoveableTypes.values().length;
                         
@@ -351,7 +247,7 @@ public class GameModel extends Observable implements Runnable{
 
         fig.addModel(this);
         //adding new figure while painting
-        figs.addFirst(fig);
+        figs.addLast(fig);
     }
     public void printWelcome(){
         int dialogResult;
@@ -361,17 +257,15 @@ public class GameModel extends Observable implements Runnable{
        
     
     }
+    
+    
     public void run(){
         
         int frameCount = 0;
-        setDim(preferences.getScreenDim());
         initDino();
-        setChanged();
-        notifyObservers(preferences);
-        
-        
         
         while(true){
+                
                 
                 if (!this.isInterrupted()){
                     if (figs.size() < MAX_NUM_FIGS ){
@@ -382,6 +276,8 @@ public class GameModel extends Observable implements Runnable{
                 
                 this.setChanged();
                 this.notifyObservers(figs);
+                
+                
                 try {
                     Thread.sleep(200);
                     
@@ -391,22 +287,27 @@ public class GameModel extends Observable implements Runnable{
             
         }
     }
-    
+  
     public void shutdown(){
         Data info = new Data();
         info.currentScore = currentScore;
         info.difficulty = difficulty;
         info.numCoinsCollected = numCoinsCollected;
         
+        
         dbM.closeConnections();
     }
 
-
+ 
     public static void setGameOver(boolean b) {
         gameOver = b;
         
         
     }
-    
+
+    public void setDiffLevel(String diffLevel) {
+        this.difficulty = diffLevel;
+    }
+
     
 }
