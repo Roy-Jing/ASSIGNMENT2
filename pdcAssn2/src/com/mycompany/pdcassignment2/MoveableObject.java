@@ -5,10 +5,13 @@ package com.mycompany.pdcassignment2;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Rectangle;
 import static java.lang.System.out;
 import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -34,7 +37,16 @@ public class MoveableObject implements MoveableFigure{
     private boolean changeToAltForm = true;
     private int velocityX;
     private int velocityY = 0;
-       
+    private Color selfColour;
+
+    public Color getColour() {
+        return selfColour;
+    }
+
+    public void setSelfColour(Color selfColour) {
+        this.selfColour = selfColour;
+    }
+     
     protected GameModel model;
     private int numPixels;
     private volatile int coordX;
@@ -130,6 +142,15 @@ public class MoveableObject implements MoveableFigure{
         this.velocityX = v;
     }
     private int pixelSize = 5;
+    private Image img;
+
+    public Image getImg() {
+        return img;
+    }
+
+    public void setImg(Image img) {
+        this.img = img;
+    }
     
     
     public void move(){
@@ -178,29 +199,27 @@ public class MoveableObject implements MoveableFigure{
     public String getid(){
         return id;
     }
+    
+    
     public void setName(String name){
         id = name;
+        Rectangle rect = new Rectangle(100, 100);
+       
     }
     
-    private Color selfColour;
     
+    
+   
     @Override
     public void drawSelf(Graphics g) {
         
-        //g.setColor(this.color);
-        int[][] form0 = this.getOriginalForm();
-        int pxSize = GameModel.getPixelSize();
+        g.drawImage(img, coordX, coordY, null);
         
-        
-     //   g.drawString(id, coordX, coordY);
-        for (int i = 0; i < numPixels; i++){
-            //g.drawRect(pxSize * form0[1][i], pxSize * (form0[0][i]), model.getPixelSize(), model.getPixelSize());
-            g.drawRect(pxSize * (coordX / 5 + form0[1][i]), pxSize * (coordY / 5 + form0[0][i]), model.getPixelSize(), model.getPixelSize());
-         
-        }
 
     }
-    
+    public void setColour(Color clr){
+        this.selfColour = clr;
+    }
    
     public boolean isActive(){
         
@@ -228,27 +247,27 @@ public class MoveableObject implements MoveableFigure{
     
     
     public void doRun(){
-      
+        
        if (!model.isInterrupted()){
-           out.println("check");
            
             if (handler.checkStillWithinFrame()){
                 if (handler.checkForCollision()){
                     handler.handleCollision();
                     
                 } 
+                
+                
+                
                 move();
                 
             } else{
                 
-                out.println("inactive");
                 
                 active = false;
             }
             
            
         } else{
-            out.println("not in frame");
 
             //model.setNumCurrentFigs(model.getNumCurrentFigs() - 1);
             active = false;

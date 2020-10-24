@@ -13,6 +13,7 @@ import static java.lang.System.out;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Observable;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.ImageIcon;
@@ -30,22 +31,26 @@ public class SettingSelectionModel extends Observable{
     public void setDbM(DatabaseModel dbM) {
         this.dbM = dbM;
     }
+    
+    
 
     public void setUsername(String username) {
         this.username = username;
     }
     
     
-    private boolean usePrevious = false;
+    private boolean usePrevious;
 
         public void setUsePrevious(boolean usePrevious) {
             this.usePrevious = usePrevious;
         }
     public void loadDefaultSetting(){
-        
+        /////////////////////
         usePrevious = false;
+        ///////////////////////
         setChanged();
         
+        //notifying settings selection window
         notifyObservers(new DefaultSelections());
         
         
@@ -62,13 +67,17 @@ public class SettingSelectionModel extends Observable{
         
     }
     
+     public boolean checkPreviousSettingsExist(){        
+        return !dbM.loadPreviousPrefsOf().isEmpty();
+    }
     
     public void loadPreviousSetting(){
         
+        LinkedHashSet<String> prefSet = dbM.loadPreviousPrefsOf();
+       
         usePrevious = true;
         
         //prefSet is set of prestrings
-        LinkedHashSet<String> prefSet = dbM.loadPreviousPrefsOf(username);
         
         //inform setting window of the pref string!
         this.setChanged();
@@ -92,7 +101,7 @@ class DefaultSelections{
                   
         for (File f : defaultFolder){
             if (f.getName().toLowerCase().endsWith(".png")){
-                out.println(f.getName() + "loading...");
+                 out.println(f.getName() + "loading...");
                 
                 images.add(new ImageIcon(f.getName()));
                 
@@ -109,6 +118,8 @@ class DefaultSelections{
         
           
     }
+    
+     
     
     public void init(){
         images =this.constructImages();

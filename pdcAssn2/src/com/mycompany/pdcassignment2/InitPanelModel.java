@@ -35,8 +35,9 @@ public class InitPanelModel extends Observable{
         
      }
     public boolean login(String username, String password){
-        if (dbM.verifyCredentials(username, password)){
-            dbM.login(username, password);
+       
+        if (dbM.login(username, password)){
+           
             return true;
         }
         else{
@@ -49,13 +50,7 @@ public class InitPanelModel extends Observable{
     }
  
     
-    
-    public void notifyPrefSelectionWindow(){
-        this.setChanged();
-        
-        this.notifyObservers(prevPrefs);
-        
-    }
+ 
 
     public boolean createUser(String user, String pswd) {
         user = user.trim();
@@ -71,7 +66,6 @@ public class InitPanelModel extends Observable{
         
         else{
             
-            out.println("invalid");
             notifyObservers(new Error("Invalid input!"));
         }
         return false;

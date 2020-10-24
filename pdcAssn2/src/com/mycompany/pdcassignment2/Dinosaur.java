@@ -1,7 +1,9 @@
 package com.mycompany.pdcassignment2;
 
 import java.awt.Graphics;
+import java.awt.Image;
 import static java.lang.System.out;
+import javax.swing.ImageIcon;
 
 /*
  * The Dinosaur class that is to be controlled by the player.
@@ -19,8 +21,9 @@ class Dinosaur extends Animal{
     private boolean previouslyHunched = false;
     private boolean hunched = false;
     private volatile boolean isJumping = false;
-    private char[][] virtualGUI;
-  
+    //private char[][] virtualGUI;
+    
+    
     public boolean isJumping() {
         return isJumping;
     }
@@ -37,7 +40,8 @@ class Dinosaur extends Animal{
     private boolean accelerated = false;
     private boolean landed = true;
     private boolean shouldMovePart = true;
-
+    private Image img = new ImageIcon("src/dinosaur.png").getImage();
+    
     
     public boolean isLanded() {
         return landed;
@@ -77,10 +81,14 @@ class Dinosaur extends Animal{
      * @return 
      */
     public int getFeetLocationY() {
+        
+        
         return this.getOriginalForm()[0][leftFootCoordIndexX] + getCoordY();
     }
     
-   
+    
+    
+    
     public void moveBackward(){
         
     }
@@ -101,7 +109,7 @@ class Dinosaur extends Animal{
     public void moveForward(){
         
     }
-    
+//    
     public char[][] getVirtualGUI(){
         return virtualGUI;
     }
@@ -109,16 +117,14 @@ class Dinosaur extends Animal{
     
     
     public void jump(){
-        out.println("jumping");
         
         this.setVelocityY(this.getVelocityY() + 1 * GameModel.getPixelSize());
     }
+   
     
-
     
     public void hunch(boolean toHunch){
        
-        out.println("hunching");
         
         if (toHunch && !previouslyHunched){
             super.getAltForm()[0][neckIndexX1]      =        
@@ -137,7 +143,10 @@ class Dinosaur extends Animal{
                 previouslyHunched = false;
         }
     }
+//  
+    char[][] virtualGUI;
     
+            
     public void initaliseVirtualGUI(){
         virtualGUI = new char[GameModel.getFrameHeight()][GameModel.getFrameWidth()];
         
@@ -148,11 +157,12 @@ class Dinosaur extends Animal{
             int cX = coordMat[1][i] ;
             int cY = coordMat[0][i];
             
-            virtualGUI[cY + dinoCoordY][cX + dinoCoordX] = '!';
+            virtualGUI[cY + dinoCoordY ][cX + dinoCoordX] = '!';
             
         }
     }
     public void updateVirtualGUI(){
+        
         int velocityX =  getVelocityX();
         int velocityY = getVelocityY();
         int coordY = getCoordY();
@@ -176,9 +186,12 @@ class Dinosaur extends Animal{
             for (int i = startPos; i != endPos; i+= shiftDir){
                 int cY = form[0][i] + coordY;
                 int cX = form[1][i] + coordX;
+                if (GameModel.pixelInFrame(cX, cY))
+                    virtualGUI[cY][cX] =  ' ';
                 
-                virtualGUI[cY][cX] =  ' ';
-                virtualGUI[cY + velocityY][cX + velocityX] = '!';
+                if (GameModel.pixelInFrame(cX + velocityX, cY + velocityY))
+
+                    virtualGUI[cY + velocityY][cX + velocityX] = '!';
                
             }
             
@@ -189,22 +202,25 @@ class Dinosaur extends Animal{
     
     @Override
     public void doRun(){
-        out.println("do Run dino");
         if (isJumping){
             
             this.jump();
             if (this.getFeetLocationY() >= GameModel.getFrameHeight()){
-                out.println("exceeded frame height !");
                 
             }
-            //out.println("velocityY" + this.getVelocityY());
+            // ("velocityY" + this.getVelocityY());
         }
         
+//        synchronized(guiobj){
+//            
+//            guiobj.updateVirtualGUI(this.getVelocityX(), this.getVelocityX(), this.getCoordX(), this.getCoordY(), this);
+//            
+//        }
+
+        
         super.doRun();
-        out.println("coordY dino: " + this.getCoordY());
-        
-        
-        
+        this.updateVirtualGUI();
+
     }
     
     
@@ -225,7 +241,6 @@ class Dinosaur extends Animal{
         super(fig);
         setCoordY(GameModel.getFrameHeight() - 4); //coord Y is body line
         setCoordX(5);
-        this.initaliseVirtualGUI();
         
         setAltForm(new int[][]{
             {0, 1,  2,  1, 3, 1,  1, 2, 0, 3, -1},//first pair is tail
@@ -244,7 +259,8 @@ class Dinosaur extends Animal{
        
        
         this.setNumPixels(11);
-        
+        initaliseVirtualGUI();
+
      
     }
     
@@ -279,7 +295,6 @@ class Dinosaur extends Animal{
         
         if (getFeetLocationY() + this.getVelocityY() >= frameHeight){
             this.setVelocityY(frameHeight - this.getFeetLocationY() - 1);
-            out.println("dino not jumping");
             
             this.isJumping(false);
         }

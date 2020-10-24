@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,7 +86,7 @@ public class DatabaseModel {
             rs = meta.getTables(null, null, null, new String[]{"TABLE"}); 
             while (rs.next()){
                 
-                out.println(rs.getString("TABLE_NAME"));
+                 out.println(rs.getString("TABLE_NAME"));
                 
                 stmt.executeUpdate("DROP TABLE " + rs.getString("TABLE_NAME"));
                 
@@ -116,29 +117,59 @@ public class DatabaseModel {
             try {
                 
                 conn = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
-                
-                System.out.println(URL + "   CONNECTED....");
+            
                 
             } catch (SQLException ex) {
                     ex.printStackTrace();
             }
         }
     }
+
+    public void savePreferences(Preferences pref){
+        try {
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO SETTINGS VALUES ( ?, ?, ?, ?, ?)");
+            ps.setInt(1, pref.screenDim.width );
+            ps.setInt(2, pref.screenDim.height);
+            
+            ps.setString(3, pref.diffLevel);
+            ps.setString(4, pref.bgImage + "");
+            ps.setString(5, this.currentUsername);
+            ps.executeUpdate();
+            
+         } catch (SQLException ex) {
+            Logger.getLogger(DatabaseModel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     
   
     public void closeConnections() {
         if (conn != null) {
             try {
-                this.updateInfo(data);
+                
                 conn.close();
             } catch (SQLException ex) {
+                out.println("cannot close connection");
+                
             }
         }
     }
     
     public boolean checkForDuplicate(String username){
-        return myQuery("SELECT * FROM USERS WHERE USERNAME = " + username) != null;
+    
+        try {
+            ResultSet rs =  myQuery("SELECT * FROM USERS WHERE USERNAME= " + "'" + username + "'");
+            return rs.next();
+        } catch (SQLException ex) {
+             out.println("error checking dup");
+            
+        }
+        
+        return true;
+        
+            
     }
+    
     public ResultSet myQuery(String sql) {
 
         Connection connection = this.conn;
@@ -169,26 +200,28 @@ public class DatabaseModel {
         }
     }
     
-    public LinkedHashSet<String> loadPreviousPrefsOf(String username){
+    public LinkedHashSet<String> loadPreviousPrefsOf(){
         LinkedHashSet<String> prefs = new LinkedHashSet();
-
-        try {
+   
+        try {            
             ResultSet rs;
+            
             
             int i = 0;
             
-            rs = myQuery("SELECT * FROM SETTINGS WHERE USERNAME = " + username);
+            rs = myQuery("SELECT * FROM SETTINGS WHERE USERNAME = '" + currentUsername + "'");
             while (rs.next()){
+                
                 int screenWidth = rs.getInt("SCREENWIDTH");
                 int screenHeight = rs.getInt("SCREENHEIGHT");
                 String diffLevel = rs.getString("GAME_DIFFICULTY");
                 String imgName = rs.getString("IMG_NAME");
                 
-                prefs.add("" + screenWidth + " x " + screenHeight + "|" + diffLevel + "|" + imgName);
+                prefs.add("" + screenWidth + " x " + screenHeight + "|" + diffLevel + "|" + imgName + "|" + currentUsername);
                 
             }
         } catch (SQLException ex) {
-            out.println("Error getting prefs!");
+             out.println("Error getting prefs!");
         }
         
         return prefs;
@@ -198,13 +231,23 @@ public class DatabaseModel {
     public boolean createUser(String name, String pswd){
        
         try {
-            Statement stmt = conn.createStatement();
+            currentUsername = name;
             
-            if (myQuery("SELECT * FROM USERS WHERE USERNAME = " + name) == null){
-                stmt.executeUpdate("INSERT INTO USERS VALUES(" + name + ", " + pswd + ")");
-
+            Statement stmt = conn.createStatement();
+            ResultSet rs;
+            rs = myQuery("SELECT * FROM USERS");
+//            rs.last();
+            // (rs.getRow());
+//            while (rs.next()){
+//                 (rs.getString("USERNAME") + rs.getString("PSWD"));
+//                
+//            }
+            
+            if (!myQuery("SELECT * FROM USERS WHERE USERNAME= '" + name + "'").next()){
+                stmt.executeUpdate("INSERT INTO USERS VALUES ('" + name + "', '" + pswd + "')");
+                 out.println("inserted");
             } else{
-                out.println("duplicate user");
+                 out.println("duplicate user");
                 
                 return false;
             }
@@ -212,7 +255,8 @@ public class DatabaseModel {
             return true;
             
         } catch (SQLException ex) {
-            out.println("cannot create user");
+             out.println("cannot create user");
+            ex.printStackTrace();
             return false;
         }
     }
@@ -222,7 +266,6 @@ public class DatabaseModel {
         boolean flag = false;
         try {
 
-            System.out.println("check existing tables.... ");
             String[] types = {"TABLE"};
             DatabaseMetaData dbmd = conn.getMetaData();
             
@@ -237,7 +280,6 @@ public class DatabaseModel {
                     //stmt.executeUpdate("DROP table " + tableName);
 //
                     if (tableName.compareToIgnoreCase(newTableName) == 0) {
-                        System.out.println(tableName + "  is there");
                         flag = true;
                     }
 
@@ -247,16 +289,19 @@ public class DatabaseModel {
         return flag;
 }
     
+    String currentUsername;
+    
     public void initialiseTables(){
         try{
         Statement stmt = conn.createStatement();
         
         stmt.executeUpdate("CREATE TABLE USERS (USERNAME VARCHAR(10), PSWD VARCHAR(10))");
-        stmt.executeUpdate("CREATE TABLE SETTINGS (SCREENWIDTH INT, SCREENHEIGHT INT, GAME_DIFFICULTY CHAR, IMG_NAME VARCHAR(10), USERNAME VARCHAR(10))");
+        stmt.executeUpdate("CREATE TABLE SETTINGS (SCREENWIDTH INT, SCREENHEIGHT INT, GAME_DIFFICULTY VARCHAR(10), IMG_NAME VARCHAR(10), USERNAME VARCHAR(10))");
+        
+
         //need a time played date, high score, coins collected, highestScore
-        stmt.executeUpdate("CREATE TABLE SCORE_INFO (HIGHESTSCORE INT, CURRENT_SCORE INT, COINS_COLLECTED INT, TIME_STAMP VARCHAR(20))");
+        stmt.executeUpdate("CREATE TABLE SCORE_INFO (HIGHESTSCORE INT, CURRENT_SCORE INT, COINS_COLLECTED INT, TIME_STAMP VARCHAR(20),  USERNAME VARCHAR(20))");
     
-        out.println("executed batch");
         
 
         } catch (SQLException e){
@@ -264,39 +309,73 @@ public class DatabaseModel {
         }
     }
     
-    
-    public void updateInfo(Data data){
-        if (highestScore > data.currentScore){
-            highestScore = data.currentScore;
-        }
+    public void saveMetaData(Data data){
         
-        Date date = new Date(data.timestamp);
-        DateFormat fmt = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
-        String formated = fmt.format(date);
-
-    
-            myUpdate("INSERT INTO SCORE_INFO (" + highestScore + ", "+
-                    data.currentScore + ", " + data.numCoinsCollected + 
-                    ", " + formated + ")");
+        try {
             
-            if (!data.usePrevious){
-                myUpdate("INSERT INTO SETTINGS (" + data.difficulty + ", " + 
-                        data.screenWidth + ", " + data.screenHeight + ")");
-                
+            
+            ResultSet rs = myQuery("SELECT * FROM SCORE_INFO");
+            int highestScore = 0;
+            if (rs.last()){
+                highestScore = rs.getInt("HIGHESTSCORE");
+                if (highestScore < data.currentScore){
+                    highestScore = data.currentScore;
+                }
             }
+            
+            
+            Date date = new Date();
+            DateFormat fmt = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+            String formated = fmt.format(date);
+            String username = data.username;
+
+          
+        } catch (SQLException ex) {
+            
+        }
     }
+            
+//    public void savePreferences(Preferences pref){
+//        
+//        int screenW = pref.screenDim.width;
+//        int screenH = pref.screenDim.height;
+//        String diffLevel = pref.diffLevel;
+//        String bgImage = pref.bgImage.toString();
+//    
+//            
+//           
+//            myUpdate("INSERT INTO SETTINGS (" + 
+//                        screenW + ", " + screenH + diffLevel + bgImage + ")");
+//            
+//            
+//    
+//    
+//            
+//    }
    
-    public boolean verifyCredentials(String name, String password){
+    public boolean verifyCredentials(String name, String password) throws SQLException{
         ResultSet rs;
         String s = null;
+        try{
+         rs = myQuery("SELECT * FROM USERS");
+       
         
-        if ((rs = myQuery("SELECT * FROM USERS WHERE USERNAME = " + name + " AND PASSWORD = " + password)) != null){
-            try {
-                s = rs.getString("USERNAME")  + rs.getString("PASSWORD");
-            } catch (SQLException ex) {
-                Logger.getLogger(DatabaseModel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            out.println(s);
+            
+        //rs.beforeFirst();
+         while(rs.next()){
+             out.println(rs.getString("USERNAME"));
+             out.println(rs.getString("PSWD"));
+            
+        }
+        } catch (SQLException ex){
+            ex.printStackTrace();
+        }
+    
+        if ((rs = myQuery("SELECT * FROM USERS WHERE USERNAME = '" + name + "' AND PSWD = '" + password + "'")).next()){
+            
+           
+           
+            s = rs.getString("USERNAME")  + rs.getString("PSWD");
     
             return true;
         }
@@ -304,22 +383,31 @@ public class DatabaseModel {
         
     }
     
+    
     public boolean login(String name, String password){
         
             try{
+                    
                     conn = DriverManager.getConnection("jdbc:derby:GameDB;create=true", "pdc", "pdc");
-                    if (this.verifyCredentials(name, password))
+                    if (this.verifyCredentials(name, password)){
+                        currentUsername = name;
+                        
                         return true;
+                    }
                      else
                         throw new SQLException("invalid login");
                     
                
             } catch (SQLException e){
-                out.println("cannot create connection");
+                e.printStackTrace();
                 
                 return false;
             }
             
+    }
+
+    public String getCurrentUsername() {
+        return currentUsername;
     }
 }
 
@@ -346,6 +434,7 @@ class Preferences{
     public Dimension screenDim;
     public ImageIcon bgImage;
     public String diffLevel;
+    
     Preferences(int dimWidth, int dimHeight, String imgName, String diffLevel){
         screenDim = new Dimension(dimWidth, dimHeight);
         bgImage = new ImageIcon(imgName);
@@ -367,11 +456,16 @@ class Preferences{
     }
     
     public static Preferences pack(String prefString){
-        String prefs[] = prefString.split("|");
-        int width = Integer.parseInt(prefs[0]);
-        int height = Integer.parseInt(prefs[1]);
-        String imgName =prefs[2];
-        String diffLevel = prefs[3];
+        
+        StringTokenizer tokenizer = new StringTokenizer(prefString, "\\||x");
+        
+        int width =  Integer.parseInt(tokenizer.nextToken().trim());
+        int height = Integer.parseInt(tokenizer.nextToken().trim());
+        
+        
+        String diffLevel = tokenizer.nextToken();
+        
+        String imgName = tokenizer.nextToken();
         
         return new Preferences(width, height, imgName, diffLevel);
         

@@ -36,13 +36,6 @@ public abstract class Animal extends MoveableFigureBaseDecorator{
             
         
     }
-    public void run(){
-        while (super.isActive()){
-            doRun();
-        }
-    }
-  
-    
-    
 
+ 
 }

@@ -74,55 +74,59 @@ public class GameGUI extends JPanel implements Observer {
     
     volatile boolean busy = false;
     
-    
+    int paintCount = 10;
     @Override
-    public synchronized void paintComponent(Graphics g){
-        out.println("inside paintComp");
-        
+    public void paintComponent(Graphics g){
         super.paintComponent(g);
-        g.drawImage(image, 0, 0, GameModel.getFrameWidth(), GameModel.getFrameHeight(), null);
         
-        //img.paintIcon(this, g, 0, 0);
-        g.drawRect(GameModel.getFrameWidth() / 2, GameModel.getFrameHeight() / 2, 10, 10);
+        g.drawImage(img, 0, 0, null);
+        
+        
         boolean found = false;
         MoveableFigure first = tempFigs.peekFirst();
       
       
         MoveableFigure fig;
-        
-        do{
-           fig = tempFigs.pollLast();
+        if (!tempFigs.isEmpty()){
+            do{
+               fig = tempFigs.pollLast();
 
-            
-           
-            if (fig.isActive()){
-               
-                fig.drawSelf(g);
-                fig.doRun();
-                tempFigs.addFirst(fig);
-            }
-            
-        } while (fig != first);
+
+
+                if (fig.isActive()){
+
+                    fig.drawSelf(g);
+                    fig.doRun();
+                    tempFigs.addFirst(fig);
+                } 
+
+            } while (fig != first);
+        }
         
         if (dino.isActive()){
             dino.drawSelf(g);
+            // (gui);
+            
             dino.doRun();
             
             
         }
-        printGUI();
+        
+        
+       // if (paintCount++ % 10 == 0)
+        //    printGUI();
        
         
         
     }
-    
+//    
     public void printGUI(){
         for (char [] row : dino.getVirtualGUI()){
             for (char c : row){
                 out.print(c);
             }
             
-            out.println();
+             
             
         }
     }
@@ -150,18 +154,20 @@ public class GameGUI extends JPanel implements Observer {
     private Dinosaur dino;
    
     @Override
-    public void update(Observable o, Object arg) {
+    public synchronized void update(Observable o, Object arg) {
         
-        if (arg instanceof LinkedList){
-            
-              
-                tempFigs = (LinkedList<MoveableFigure>) arg;
-                out.println("refreshing frame");
+        if (arg instanceof Deque){
+                
+                if (!busy){
+                    busy = true;
+                    tempFigs = (Deque<MoveableFigure>) arg;
+                     //gui = dino.getGUIObj();
 
-                repaint();
-                busy = false;
-                //revalidate();
-                out.println("after calling repaint");
+                    repaint();
+                    busy = false;
+                    //revalidate();
+              
+                }
            
                
         } else if (arg instanceof Dinosaur){
@@ -172,30 +178,34 @@ public class GameGUI extends JPanel implements Observer {
             this.initFrame();
         }
     }
-    private Image image;
     
     public void setImage(ImageIcon img) {
         
             this.img = img.getImage();
             
             //image = ImageIO.read(getClass().getResourceAsStream("src/img1.JPG"));
-            out.println("set image :" + image);
             
         
     }
     
     public void promptQuit(){
         int dialogResult;
-        dialogResult = JOptionPane.showConfirmDialog(this, "Would You Like to Save your Previous Note First?","Warning", JOptionPane.YES_NO_OPTION);
+        dialogResult = JOptionPane.showConfirmDialog(this, "Are you sure you want to quit?","Warning", JOptionPane.YES_NO_OPTION);
         
         if(dialogResult == JOptionPane.YES_OPTION){
   // Saving code here
+   
             model.setGameOver(true);
-           
+            model.closeSession();
+            
         } else{
+            
+            
             model.setInterrupted(false);
-            frame.dispose();
+            
+            
         }
+        
         
         
     }

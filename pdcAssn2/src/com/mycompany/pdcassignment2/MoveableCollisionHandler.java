@@ -12,7 +12,7 @@ import java.util.Arrays;
  *
  * @author Roy
  */
-public class MoveableCollisionHandler extends CollisionHandler<MoveableFigure>{
+public class MoveableCollisionHandler extends CollisionHandler{
     
     MoveableCollisionHandler(MoveableFigure fig){
         super(fig);
@@ -28,48 +28,35 @@ public class MoveableCollisionHandler extends CollisionHandler<MoveableFigure>{
     @Override
     public boolean checkForCollision(){
             
-        char[][] copyVitual = dino.getVirtualGUI();
-       
+        
+        //char[][] copyVitual = dino.getVirtualGUI();
+        if (!(self instanceof Dinosaur)){
+            char[][] virtualGUI = dino.getVirtualGUI();
+        
+            if (GameModel.pixelInFrame(self.getCoordX(), self.getCoordY()))
+                 virtualGUI[self.getCoordY() ][self.getCoordX()] = '/';
+                 
+        int[][] selfForm = self.getOriginalForm();
+        int coordX = self.getCoordX();
+        int coordY = self.getCoordY();
+        int velX = self.getVelocityX();
+        int velY = self.getVelocityY();
+        
+        for (int c = 0; c < self.getNumPixels(); c++){
             
-           
-            if (! (self instanceof Dinosaur)){
-                char[][] virtualGUI = dino.getVirtualGUI();
-                
-                int[][] selfCoords = self.getOriginalForm();
-
-                for (int i = 0; i < self.getNumPixels(); i++){
-                    int coordX = self.getCoordX() + selfCoords[1][i];
-                    
-                    int coordY = self.getCoordY() + selfCoords[0][i];
-                    
-                    if (GameModel.pixelInFrame(coordX + self.getVelocityX(), coordY + self.getVelocityY()))
-                            copyVitual[coordY + self.getVelocityY()][coordX + self.getVelocityX()] = '.';
-                        
-                    if (GameModel.pixelInFrame(coordX, coordY)){
-                        copyVitual[coordY][coordX] = ' ';
-                        
-                        
-                        
-                        if (virtualGUI[coordY][coordX] == '!'){
-                            out.println("colliding!");
-                            out.println("colliding!");
-                            out.println("colliding!");
-                            return true;
-                        }
-                    }
-                }
-            }  
+            int cX= selfForm[1][c] + coordX + velX;
+            int cY = selfForm[0][c] + coordY + velY;
             
-            out.println("vitual");
-            
-            for (char[] row : copyVitual ){
-                for (char c : row ){
-                    out.print(c);
-                }
-                out.println();
+            if (GameModel.pixelInFrame(cX, cY) && virtualGUI[cY][cX] == '!'){
+                 out.println("COLLISION DETECTED");
+                return true;
+                //System.exit(0);
             }
-            return false;
-            
+                 
+        }   
+        
+        }
+       return false; 
     }
     
     

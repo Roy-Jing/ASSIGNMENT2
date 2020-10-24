@@ -17,8 +17,8 @@ public enum MoveableTypes {
     
     PLANT(new Plant(new MoveableObject("PLANT"))),
     BIRD(new Bird(new MoveableObject("BIRD"))),
-    CLOUD(new Cloud(new MoveableObject("CLOUD")));
-    //COIN(new Coin(new MoveableObject("Coin")));
+    CLOUD(new Cloud(new MoveableObject("CLOUD"))),
+    COIN(new Coin(new MoveableObject("Coin")));
     
     
     private MoveableFigure f;
@@ -29,7 +29,6 @@ public enum MoveableTypes {
     }
 
     public MoveableFigure getNewFigure(){
-        out.println("get new figure");
         
         return f.getNewFigure();
     }

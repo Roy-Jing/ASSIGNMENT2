@@ -1,6 +1,8 @@
 package com.mycompany.pdcassignment2;
 
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.util.Random;
 
 
@@ -43,6 +45,7 @@ interface CollideableFigure extends Figure{
 
 interface MoveableFigure extends Figure{
     
+    
     public boolean stillWithinFrame();
     
     public int getNumPixels();
@@ -75,14 +78,23 @@ interface MoveableFigure extends Figure{
  
     public void drawSelf(Graphics g);
     
+    public Image getImg();
+    
+    public void setImg(Image img);
+    
+    
     public boolean isActive();
     
     public void addModel(GameModel m);
     
     public void setMoved(boolean flag);
     
-
+    public Color getColour();
+    
     public String getid();
+
+    public void setColour(Color clr);
+
     
 }
 

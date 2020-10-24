@@ -34,7 +34,6 @@ public class DinoController implements KeyListener  {
    
     @Override
     public void keyPressed(KeyEvent e) {
-        out.println("pressed");
          
         if (!dino.isJumping()){
             char key = e.getKeyChar();
@@ -43,7 +42,7 @@ public class DinoController implements KeyListener  {
                 case 'w':
 
                     keyHit = true;
-                    dino.setVelocityY(-4 * GameModel.getPixelSize());
+                    dino.setVelocityY(-6 * GameModel.getPixelSize());
                     dino.setLanded(false);
                     dino.isJumping(true);
                     if (dino.isHunched()){

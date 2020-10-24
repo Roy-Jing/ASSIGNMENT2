@@ -1,6 +1,8 @@
 package com.mycompany.pdcassignment2;
 
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 
 
 
@@ -14,7 +16,7 @@ import java.awt.Graphics;
  *
  * @author Roy
  */
-public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
+public abstract  class MoveableFigureBaseDecorator implements MoveableFigure{
     
     protected MoveableFigure figure;
 
@@ -27,6 +29,14 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
         figure.setCollisionHandler(handler);
     }
     
+    public void setColour(Color clr){
+        figure.setColour(clr);
+        
+    }
+    public Color getColour(){
+        return figure.getColour();
+        
+    }
     public boolean isActive(){
     
         return figure.isActive();
@@ -61,9 +71,11 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
    
     @Override
     public boolean stillWithinFrame(){
+        
         return figure.stillWithinFrame();
     }
     
+   
     @Override
     public int getCoordY() {
         return figure.getCoordY();
@@ -153,6 +165,19 @@ public abstract class MoveableFigureBaseDecorator implements MoveableFigure{
 
     public void drawSelf(Graphics g){
         figure.drawSelf(g);
+    }
+
+    @Override
+    public Image getImg() {
+        return figure.getImg();   
+    
+    }
+    
+    
+
+    @Override
+    public void setImg(Image img) {
+        figure.setImg(img);
     }
     
    

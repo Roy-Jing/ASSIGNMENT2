@@ -90,31 +90,40 @@ public class SettingSelectionWindow extends JPanel implements Observer{
         
         for (String diffLevel : selections.diffLevel ){
             diffSelection.addItem(diffLevel);
-            out.println(diffLevel);
         }
         
         for (String dim : selections.dimensions ){
             screenDimSelection.addItem(dim);
-                        out.println(dim);
 
         }
         Object[] images = selections.images.toArray(new Object[selections.images.size()]);
         
-        
+       
         prefSelection = new JComboBox(images);
-        prefSelection.setSize(new Dimension(100, 100));
+        
+        
+        prefSelection.setPreferredSize(new Dimension(1000, 1000));
         
     }
+    
+    
      public void bringToNewPreferenceSelection(){
         
         
         removeAll();
-        out.println("bring to new prefs");
+        
+        this.setLayout(new GridBagLayout());
+        this.addAt(1, 1, new JLabel("Select settings..."));
+        gbc.ipadx = 2;
+        gbc.ipady = 2;
         
         screenDimSelection.setSelectedIndex(0);
         this.addAt(2, 1 , new JLabel("Select a screen dimension"));
         this.addAt(2, 2, this.screenDimSelection);
         this.addAt(3, 1, new JLabel("Select a difficulty"));
+        
+        
+        
         this.addAt(3, 2, diffSelection);
         this.addAt(4, 1, new JLabel("Background image"));
         this.addAt(4, 2, prefSelection, 100, 100);
@@ -147,10 +156,8 @@ public class SettingSelectionWindow extends JPanel implements Observer{
     }
    
     public void update(Observable o, Object arg){
-        this.addAt(0, 0, new JLabel("Select settings..."));
+        
         if (arg instanceof DefaultSelections ){
-            out.println("init default selections");
-            
             this.unpackDefaultSelections((DefaultSelections) arg);
             this.bringToNewPreferenceSelection();
             
@@ -162,22 +169,21 @@ public class SettingSelectionWindow extends JPanel implements Observer{
             this.bringToOldPreferenceSelection();
         }
         this.add(this.confirmSelectionBtn);
-        
+        this.confirmSelectionBtn.addActionListener(controller);
         parentFrame.add(this);
         parentFrame.setVisible(true);
 
     }
 
-    
     private void bringToOldPreferenceSelection() {
-       
-        this.addAt(1, 1, this.previousPrefSelection, 20);
-        this.addAt(4, 4, this.confirmSelectionBtn);
+        
+        this.addAt(1, 3, this.previousPrefSelection);
+        this.addAt(1, 1, new JLabel("Select from history settings..."));
+        
     }
     
     public Preferences getSelection(){
         String prefString = (String) previousPrefSelection.getSelectedItem();
-        
         return Preferences.pack(prefString);
         
     }
@@ -229,22 +235,33 @@ class SettingSelectionController implements ActionListener{
             GUI.loadPreferences(settings);
             gameModel.setDimensions(settings.screenDim);
             gameModel.setDiffLevel(settings.diffLevel);
-
+            
     }
     public void actionPerformed(ActionEvent e){
         Object src = e.getSource();
+        
+        //this will only be triggered if confirmSelectionBtn is clicked
+        if (src == settingsWindow.getConfirmSelectionBtn()){
         if (settingsModel.getUsePrevious()){
             //watch out for prefString, might cause exception
             //selecting a preference
             Preferences settings = settingsWindow.getSelection();
             this.configureGameModel(settings);
-
             
         } else if (!settingsModel.getUsePrevious()){
             Preferences customisedSettings = settingsWindow.getCustomisedSelection();
             this.configureGameModel(customisedSettings);
+            
+            //only set if user does not choose to use previous -- meaning new preferences created
+            gameModel.setPreferences(customisedSettings);
+             
+            
         }
         gameModel.init();
+        
+        }
+        
+        
     }
 
     public void addView(SettingSelectionWindow settingsWindow) {

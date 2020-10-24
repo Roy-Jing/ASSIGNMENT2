@@ -105,7 +105,6 @@ public class InitPanel extends JPanel implements Observer {
     public void askForUsingPreviousSetting(){
         //GameModel's preferences at this point is not null.
         this.removeAll();
-        out.println("ask for using previos");
         
         //promptWindow = new JPanel();
         usePrevious.addActionListener(controller);
@@ -143,9 +142,15 @@ public class InitPanel extends JPanel implements Observer {
         
         this.setLayout(new GridBagLayout());
         
-        usernameField = new JTextField("            ");
-        passwordField = new JTextField("            ");
         
+        usernameField = new JTextField();
+        passwordField = new JTextField();
+        
+        usernameField.setColumns(15);
+        passwordField.setColumns(15);
+        
+        parentFrame = new JFrame("Initial config...");
+        parentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         loginButton = new JButton("Login");
         loginButton.addActionListener(controller);
@@ -153,68 +158,7 @@ public class InitPanel extends JPanel implements Observer {
         
         
     }
-    public static void main(String args[]){
-        //if preferences is null (non-existent0
-            //bring user to preferences menu
-             
-          
-        //JFrame f = new JFrame();
-        //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        InitPanel initPanel = new InitPanel();
-        
-       
-        GameGUI gameGUI = new GameGUI();
-        DatabaseModel dbM = new DatabaseModel();
-        
-        
-        
-        GameModel gM = new GameModel();
-        gM.addObserver(initPanel);
-        gM.addObserver(gameGUI);
-        
-        
-        InitPanelController initController = new InitPanelController();
-        
-        InitPanelModel initModel = new InitPanelModel();
-        initPanel.addController(initController);
-        initModel.addObserver(initPanel);
-        initModel.setDbM(dbM);
-         SettingSelectionWindow settingsWindow = new SettingSelectionWindow();
-        SettingSelectionController settingController = new SettingSelectionController();
-        settingsWindow.setController(settingController);
-        
-         SettingSelectionModel settingsModel = new SettingSelectionModel();
-        settingsModel.setDbM(dbM);
-        settingsModel.addObserver(gameGUI);
-        settingsModel.addObserver(settingsWindow);
-       
-        settingController.addModel(gM);
-        settingController.addModel(settingsModel);
-        settingController.addView(settingsWindow);
-        settingController.setGUI(gameGUI);
-        
-        initController.addModel(initModel);
-        initController.addView(initPanel);
-        initController.addModel(settingsModel);
-        
-        GameController gameController = new GameController();
-        gameController.addView(gameGUI);
-        gameController.addModel(gM);
-        gameGUI.addController(gameController);
-        
-       
-        //dbM.reset();
-        initModel.init();
-       
-        
-        
-        
-       
-        
-      
-       
-    }
-    
+  
     public void addController(ActionListener listener){
         controller = (InitPanelController) listener;
     }
@@ -259,7 +203,6 @@ public class InitPanel extends JPanel implements Observer {
        
         
         add(this.messagePane);
-        out.println(controller);
           
         nextButton.addActionListener(controller);
           
@@ -274,7 +217,6 @@ public class InitPanel extends JPanel implements Observer {
     }
    
     public void displayError(String errMessage){
-        out.println("displaying error");
         
         JOptionPane.showMessageDialog(this, errMessage, "ERROR",
                         JOptionPane.ERROR_MESSAGE);
@@ -288,8 +230,6 @@ public class InitPanel extends JPanel implements Observer {
         //init() in GameModel will set arg to null
         if (arg instanceof Boolean){
             
-           
-            this.parentFrame = new JFrame("Init Panel");
             parentFrame.add(this);
             parentFrame.setVisible(true);
             
@@ -338,7 +278,7 @@ public class InitPanel extends JPanel implements Observer {
         
         addAt(10, 2, passwordField);
      
-        addAt(10, 4, loginButton);
+        addAt(10, 3, loginButton);
         
         if (canLogin){
             loginButton.addActionListener(controller);

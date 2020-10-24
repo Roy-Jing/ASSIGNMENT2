@@ -7,6 +7,7 @@ package com.mycompany.pdcassignment2;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import static java.lang.System.out;
 import java.util.Random;
 
 /**
@@ -16,7 +17,6 @@ import java.util.Random;
 public class Coin extends MoveableFigureBaseDecorator{
     private int value;
    
-    private Color color;
     private boolean isCollected = false;
     private int ovalWidth = 10;
     private int coinSize = 10;
@@ -28,18 +28,21 @@ public class Coin extends MoveableFigureBaseDecorator{
     private int spinDir = -1;
     Coin(MoveableFigure fig){
         super(fig);
-        figure.setCollisionHandler(new CoinCollisionHandler(this));
-        color = Color.YELLOW;
+        setCollisionHandler(new CoinCollisionHandler(this));
         
-        setCoordY(GameModel.getFrameHeight() - generator.nextInt(10));
+        setColour(Color.YELLOW);
+        setCoordY(GameModel.getFrameHeight() - (generator.nextInt(10) + 5));
         setCoordX(GameModel.getFrameWidth()  - ovalWidth);
-        
+        this.setVelocityX(-1 * GameModel.getPixelSize());
         
     }
     
+    public boolean stillWithinFrame(){
+        return ovalWidth / 2 + this.getCoordX() >= 0;
+    }
     
     public void spin(){
-        if (ovalWidth == 1){
+        if (ovalWidth == 0){
             spinDir = 1;
         } else if (ovalWidth == coinSize){
             spinDir = -1;
@@ -51,11 +54,12 @@ public class Coin extends MoveableFigureBaseDecorator{
     
     
     public void drawSelf(Graphics g){
-        g.setColor(color);
+        g.setColor(this.getColour());
         
         g.fillOval(super.getCoordX(), super.getCoordY(), ovalWidth , coinSize);
         
         spin();
+        g.setColor(Color.BLACK);
         
     }
     
@@ -82,26 +86,28 @@ class CoinCollisionHandler extends MoveableCollisionHandler{
     }
     public void handleCollision(){
         GameModel.addCoin();
-       
         
+     
         ((Coin)self).setActive(false);
         
     }
     
     
     public boolean checkForCollision() {
-        int[][] dinoMatrix = dino.getOriginalForm();
         
-        for (int i = 0; i < dino.getNumPixels(); i++){
-            int cx = dinoMatrix[1][i];
-            
-            int cy = dinoMatrix[0][i];
-            
-            if (Math.sqrt((Math.pow((cx - self.getCoordX()), 2.0) +
-                    (Math.pow((cy - ((Coin)self).getCoordY()), 2.0)))) < ((Coin)self).getCoinSize() / 2){
+        
+        char[][] virtualGUI = dino.getVirtualGUI();
+        out.println(dino.getCoordX());
+        out.println(self.getCoordX());
+        
+        
+            if (GameModel.pixelInFrame(self.getCoordX(), self.getCoordY()) && 
+                    virtualGUI[self.getCoordY()][self.getCoordX()] == '!'){
+                 out.println("collision detected by coin ");
+                
                 return true;
             }
-        }
+       
         
         return false;
     }

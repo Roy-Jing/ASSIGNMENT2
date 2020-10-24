@@ -61,9 +61,15 @@ class InitPanelController implements ActionListener{
                 p.bringToLogin(false);
                 
             } else if (src == p.getLoginButton()){
-                if (initModel.login(p.getUsernameField().getText(), p.getPasswordField().getText())){
-                    p.askForUsingPreviousSetting();
-                }
+                if (initModel.login(p.getUsernameField().getText().trim(), p.getPasswordField().getText().trim())){
+                    if (settingsModel.checkPreviousSettingsExist())
+                        p.askForUsingPreviousSetting();
+                    else
+                        settingsModel.loadDefaultSetting();
+                    
+                     //SwingUtilities.getWindowAncestor(p).dispose();
+
+                } 
                     
                 
             } else if (src == p.usePrevious()){
@@ -76,21 +82,25 @@ class InitPanelController implements ActionListener{
             } 
             //ask for using previous setting
             else if (src == p.dontUsePrevious()){
-                settingsModel.loadPreviousSetting();
-                //settingsWind.bringToNewPreferenceSelection();
-                //JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
+                settingsModel.loadDefaultSetting();
+               
+                //settingsModel.loadPreviousSetting();
+                //.bringToNewPreferenceSelection();
+                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
 
-                //topFrame.dispose();
+                topFrame.dispose();
                 //parent.dispatchEvent(new WindowEvent(parent, WindowEvent.WINDOW_CLOSING));
 
             
             } else if (src == p.getCreateNewUserBtn()){
                 if (initModel.createUser(p.getUsernameField().getText(), p.getPasswordField().getText())){
                     settingsModel.loadDefaultSetting();
-                    //settingsWind.bringToNewPreferenceSelection();
+                    
+
+//settingsWind.bringToNewPreferenceSelection();
                 }
 
-            } 
+            }  
             
         }
         

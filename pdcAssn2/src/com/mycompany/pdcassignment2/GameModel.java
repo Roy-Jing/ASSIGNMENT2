@@ -31,7 +31,10 @@ public class GameModel extends Observable implements Runnable{
     private int currentScore = 0;
     private static volatile int numCoinsCollected = 0;
     private String difficulty;
-    private boolean interrupted  = false;
+    
+    
+    //remoember to adjust game based on difficulty
+    private volatile boolean interrupted  = false;
 
     public boolean isInterrupted() {
         return interrupted;
@@ -71,6 +74,7 @@ public class GameModel extends Observable implements Runnable{
 
     public static void addCoins(){
         numCoinsCollected += 1;
+       
     }
     public static boolean reset(){
         return reset;
@@ -119,12 +123,7 @@ public class GameModel extends Observable implements Runnable{
         onPause = flag;
     }
     
-    public synchronized void updateCount(){
-        out.println("update called");
-        
-        drawCount++;
-        
-    }
+
     
    
     public static int getFrameWidth() {
@@ -183,27 +182,11 @@ public class GameModel extends Observable implements Runnable{
     }
     
     
-    public static void main(String args[]){
-        LinkedList<MoveableFigure> list = new LinkedList();
-        
-        Collection<MoveableFigure> c = Collections.synchronizedList(list);
-        
-        out.println(list);
-        list.remove();
-        out.println(c);
-        
-        
-    }
- 
-    private volatile int drawCountLim;
-    
-    public synchronized void printInfo(){
-        out.println("dCtLim" + drawCountLim);
-            out.println("dCt" + drawCount);
-            out.println("is drawing: " + drawing);
-    }
     
    
+ 
+    private volatile int drawCountLim;
+
     public synchronized void addDrawCount(){
         drawCount++;
     }
@@ -258,46 +241,52 @@ public class GameModel extends Observable implements Runnable{
     
     }
     
-    
     public void run(){
         
         int frameCount = 0;
         initDino();
-        
-        while(true){
+        while (!gameOver){
+        if (!interrupted){
                 
                 
-                if (!this.isInterrupted()){
+               
                     if (figs.size() < MAX_NUM_FIGS ){
                         this.generateNewFigures();
                     }
                     
-                }
                 
                 this.setChanged();
                 this.notifyObservers(figs);
                 
                 
-                try {
+                
+                
+            
+        }
+        
+        try {
                     Thread.sleep(200);
                     
                 } catch (InterruptedException ex) {
                 }
-                
-            
         }
+        
+        
     }
   
-    public void shutdown(){
-        Data info = new Data();
-        info.currentScore = currentScore;
-        info.difficulty = difficulty;
-        info.numCoinsCollected = numCoinsCollected;
+    
+    public void closeSession(){
         
-        
+        //dbM.savePreferences(preferences);
+        if (preferences != null){
+            dbM.savePreferences(preferences);
+            
+        }
         dbM.closeConnections();
+        System.exit(0);
     }
-
+    
+  
  
     public static void setGameOver(boolean b) {
         gameOver = b;
@@ -309,5 +298,10 @@ public class GameModel extends Observable implements Runnable{
         this.difficulty = diffLevel;
     }
 
+    void savePreferences(Preferences customisedSettings) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+ 
     
 }

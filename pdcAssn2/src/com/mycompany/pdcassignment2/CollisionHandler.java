@@ -5,18 +5,21 @@
  */
 package com.mycompany.pdcassignment2;
 
+import static java.lang.System.out;
+
 /**
  *
  * @author Roy
  */
-public abstract class CollisionHandler<F extends Figure> {
+public abstract class CollisionHandler {
     public abstract void handleCollision();
     
     protected static Dinosaur dino;
-    protected F self;
+    protected MoveableFigure self;
     
-    CollisionHandler(F fig){
+    CollisionHandler(MoveableFigure fig){
         self = fig;
+        
     }
     
     public static void addDino(Dinosaur d){
@@ -33,9 +36,13 @@ public abstract class CollisionHandler<F extends Figure> {
         //self's coord y will always be negative.
         //with this in mind, this difference plus self's coordY is < self's coordY
         //indicating dino will intersect with self.
+        out.println("dino below the cloud on next frame " + (dino.getFeetLocationY()+ dino.getVelocityY() - self.getCoordY() >= 0));
+        out.println("dino above the cloud on this frame" + (dino.getFeetLocationY() - self.getCoordY() < 0));
         
         //else (if difference is 0 or +ve, then it won't
-        return (dino.getFeetLocationY() - self.getCoordY()) < 0
+        return (dino.getLeftFootCoordX() >= self.getCoordX() &&
+                dino.getRightFootCoordX() <= self.getRightMostCoordX() 
+                && (dino.getFeetLocationY() - self.getCoordY()) < 0)
                 && (dino.getFeetLocationY()+ dino.getVelocityY() - self.getCoordY()) >= 0;
         
     }
