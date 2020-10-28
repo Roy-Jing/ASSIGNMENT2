@@ -5,6 +5,7 @@
  */
 package com.mycompany.pdcassignment2;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -18,6 +19,8 @@ import java.util.Observer;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import static java.lang.System.out;
@@ -26,11 +29,24 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -39,6 +55,10 @@ import javax.swing.JLabel;
 public class SettingSelectionWindow extends JPanel implements Observer{
     private JLabel promptSelectionLbl = new JLabel("Select settings ...");
     private JFrame parentFrame = new JFrame();
+
+    public JFrame getParentFrame() {
+        return parentFrame;
+    }
     
     private DatabaseModel dbM;
     private JComboBox diffSelection;
@@ -50,6 +70,7 @@ public class SettingSelectionWindow extends JPanel implements Observer{
     public JButton getConfirmSelectionBtn() {
         return confirmSelectionBtn;
     }
+    DefaultSelections defaultSettings = new DefaultSelections();
     
     private GridBagConstraints gbc = new GridBagConstraints();
     private SettingSelectionController controller;
@@ -75,7 +96,7 @@ public class SettingSelectionWindow extends JPanel implements Observer{
                 
             }
         }
-        this.add(comp, gbc);
+        //this.add(comp, gbc);
         
     }
     
@@ -83,10 +104,12 @@ public class SettingSelectionWindow extends JPanel implements Observer{
         this.setLayout(new GridBagLayout());
         
     }
+    JTable settingsTable;
     
     public void unpackDefaultSelections(DefaultSelections selections){
         diffSelection = new JComboBox();
         screenDimSelection = new JComboBox();
+        defaultSettings = selections;
         
         for (String diffLevel : selections.diffLevel ){
             diffSelection.addItem(diffLevel);
@@ -96,13 +119,12 @@ public class SettingSelectionWindow extends JPanel implements Observer{
             screenDimSelection.addItem(dim);
 
         }
-        Object[] images = selections.images.toArray(new Object[selections.images.size()]);
         
-       
-        prefSelection = new JComboBox(images);
+        prefSelection.setSize(new Dimension(1000, 1000));
         
         
-        prefSelection.setPreferredSize(new Dimension(1000, 1000));
+       prefSelection = new JComboBox(selections.getScaledImage());        
+        
         
     }
     
@@ -112,26 +134,31 @@ public class SettingSelectionWindow extends JPanel implements Observer{
         
         removeAll();
         
-        this.setLayout(new GridBagLayout());
-        this.addAt(1, 1, new JLabel("Select settings..."));
-        gbc.ipadx = 2;
-        gbc.ipady = 2;
+        this.setLayout(new BorderLayout());
+        this.add(new JLabel("Select settings..."), BorderLayout.NORTH);
         
         screenDimSelection.setSelectedIndex(0);
-        this.addAt(2, 1 , new JLabel("Select a screen dimension"));
-        this.addAt(2, 2, this.screenDimSelection);
-        this.addAt(3, 1, new JLabel("Select a difficulty"));
         
+        JPanel eastPanel = new JPanel();
+        eastPanel.setLayout(new BorderLayout());
+         JPanel midPanel = new JPanel();
+        eastPanel.setLayout(new BorderLayout());
+        JPanel westPanel = new JPanel();
+        eastPanel.setLayout(new BorderLayout());
+
+        westPanel.add(this.screenDimSelection, BorderLayout.NORTH);
+        westPanel.add(new JLabel("Select a screen dimension"),BorderLayout.SOUTH );
         
+        midPanel.add(new JLabel("Select a difficulty"), BorderLayout.NORTH);
+        midPanel.add(this.diffSelection, BorderLayout.SOUTH);
+                
+                
+        eastPanel.add(new JLabel("Select a background image"), BorderLayout.NORTH);
+        eastPanel.add(this.prefSelection, BorderLayout.SOUTH);
         
-        this.addAt(3, 2, diffSelection);
-        this.addAt(4, 1, new JLabel("Background image"));
-        this.addAt(4, 2, prefSelection, 100, 100);
-        
-        this.addAt(4, 4, this.confirmSelectionBtn);
-        
-        
-        confirmSelectionBtn.addActionListener(controller);
+        this.add(westPanel, BorderLayout.WEST);
+        this.add(midPanel, BorderLayout.CENTER);
+        this.add(eastPanel, BorderLayout.EAST);
         
         
     }
@@ -147,49 +174,162 @@ public class SettingSelectionWindow extends JPanel implements Observer{
     
     public void setPreviousPrefs(LinkedHashSet<String> prefStrings){
         previousPrefSelection = new JComboBox();
+        String[] columns = {"Screen Dimension", "Game Difficulty", "Background Image"};
+
+        String[][] data = new String[prefStrings.size()][];
+        String[] rows = prefStrings.toArray(new String[prefStrings.size()]);
         
-        for (String prefString : prefStrings){
-                previousPrefSelection.addItem(prefString);
+        for (int i =0;i < prefStrings.size(); i++){
+            data[i] =rows[i].split("\\|");
+            
+        }
+        settingsTable = new NonEditableTable(data, columns);
+        settingsTable.setLocation(5, 5);
+        settingsTable.setSelectionModel(new NonEditableTableModel());
+        scrollPane = new JScrollPane(settingsTable);
+        settingsTable.addMouseListener(new MouseAdapter(){
+            private JButton btn = SettingSelectionWindow.this.confirmSelectionBtn;
+            
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                btn.setEnabled(true);
             }
+
+        });
         
         
     }
-   
+
+                
+    
+    class NonEditableTable extends JTable {
+        private static final long serialVersionUID = 1L;
+        
+        NonEditableTable(Object[][] data, String[] columns){
+            super(data, columns);
+        }
+
+        
+        public boolean isCellEditable(int row, int column) {                
+                return false;               
+        };
+        
+    }
+    
+    class NonEditableTableModel extends DefaultListSelectionModel{
+        public NonEditableTableModel () {
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        }
+
+        @Override
+        public void clearSelection() {
+        }
+
+        @Override
+        public void removeSelectionInterval(int index0, int index1) {
+        }
+    }
+    
+    JScrollPane scrollPane;
+    private JButton goBack = new JButton("Go Back");
+    
     public void update(Observable o, Object arg){
         
+        //if arg is null then it means we have previous displayed this
+        //panel but user has decided to "go back" and then enter again.
+        
+        if (o instanceof SettingSelectionModel && arg == null){
+            parentFrame.setVisible(true);
+            return;
+            
+        }
+        
+        this.setLayout(new BorderLayout());
+        this.add(Box.createHorizontalStrut(10));
+                this.add(Box.createVerticalStrut(10));
+         
+        
         if (arg instanceof DefaultSelections ){
+                        confirmSelectionBtn.setEnabled(true);
+
             this.unpackDefaultSelections((DefaultSelections) arg);
             this.bringToNewPreferenceSelection();
             
         }
         else if (arg instanceof LinkedHashSet ){
-            
+            out.println("arg linkedhash");
+            confirmSelectionBtn.setEnabled(false);
+
             setPreviousPrefs((LinkedHashSet<String>) arg);
-            
             this.bringToOldPreferenceSelection();
-        }
-        this.add(this.confirmSelectionBtn);
-        this.confirmSelectionBtn.addActionListener(controller);
-        parentFrame.add(this);
-        parentFrame.setVisible(true);
-
-    }
-
-    private void bringToOldPreferenceSelection() {
+        } 
         
-        this.addAt(1, 3, this.previousPrefSelection);
-        this.addAt(1, 1, new JLabel("Select from history settings..."));
+       
+        
+            if (arg instanceof Boolean && (boolean) arg){
+                 JPanel confirmAndGoBack = new JPanel();
+
+                confirmAndGoBack.add(goBack);
+                confirmAndGoBack.add(this.confirmSelectionBtn);
+
+                goBack.addActionListener(controller);
+                this.add(confirmAndGoBack, BorderLayout.SOUTH);
+
+
+            } else{
+
+
+                this.add(this.confirmSelectionBtn, BorderLayout.SOUTH);
+            }
+            if ( !addedThis){
+                addedThis = true;
+                parentFrame.add(this);
+                confirmSelectionBtn.addActionListener(controller);
+
+            }
+            
+            parentFrame.setPreferredSize(new Dimension(1000, 300));
+            parentFrame.pack();
+            parentFrame.setResizable(false);
+            parentFrame.setVisible(true);
+            
+            
+            
         
     }
     
+    private boolean addedThis;
+   
+
+    private void bringToOldPreferenceSelection() {
+        
+        this.removeAll();
+        this.setLayout(new BorderLayout());
+        this.add(new JLabel("Select from history settings..."), BorderLayout.NORTH );
+        
+        this.add(this.scrollPane, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
+    }
+    
     public Preferences getSelection(){
-        String prefString = (String) previousPrefSelection.getSelectedItem();
-        return Preferences.pack(prefString);
+        
+        TableModel model = settingsTable.getModel();;
+            
+        int row = settingsTable.getSelectedRow();
+        
+         String dimString = (String) model.getValueAt(row, 0);
+         String  imgName = (String) model.getValueAt(row, 1 );
+                  String diffLevel = (String) model.getValueAt(row, 2 );
+
+                 //    Preferences(int dimWidth, int dimHeight, String imgName, String diffLevel){
+
+        return new Preferences(dimString, "src/BackgroundsFolder/" + imgName, diffLevel );
         
     }
     
     public Preferences getCustomisedSelection(){
-        ImageIcon imgName = (ImageIcon) this.prefSelection.getSelectedItem();
+        ImageIcon imgName = (defaultSettings.getImageIconAt(this.prefSelection.getSelectedIndex()));
         String diffLevel = (String) this.diffSelection.getSelectedItem();
         String dimensions = (String) this.screenDimSelection.getSelectedItem();
         String[] dim = dimensions.split("x| ");
@@ -201,22 +341,29 @@ public class SettingSelectionWindow extends JPanel implements Observer{
         
         return new Preferences(width, height, imgName, diffLevel);
         
+    }
+    public JButton getGoBack(){
+        return goBack;
+    }
     
-    
+   
 }
-}
+
 
 
 class SettingSelectionController implements ActionListener{
     private GameGUI GUI ;
     private SettingSelectionWindow settingsWindow;
     private GameModel gameModel;
+    private InitPanel panel;
+    
     SettingSelectionModel settingsModel;
     
    
     public void setGUI(GameGUI GUI) {
         this.GUI = GUI;
     }
+ 
     
     public void setView(SettingSelectionWindow wind){
         settingsWindow = wind;
@@ -230,11 +377,12 @@ class SettingSelectionController implements ActionListener{
         this.settingsModel = m;
     } 
   
-    public void configureGameModel(Preferences settings){
+    public void configureGame(Preferences settings){
         
-            GUI.loadPreferences(settings);
+            
             gameModel.setDimensions(settings.screenDim);
             gameModel.setDiffLevel(settings.diffLevel);
+            GUI.loadPreferences(settings);
             
     }
     public void actionPerformed(ActionEvent e){
@@ -242,28 +390,45 @@ class SettingSelectionController implements ActionListener{
         
         //this will only be triggered if confirmSelectionBtn is clicked
         if (src == settingsWindow.getConfirmSelectionBtn()){
-        if (settingsModel.getUsePrevious()){
-            //watch out for prefString, might cause exception
-            //selecting a preference
-            Preferences settings = settingsWindow.getSelection();
-            this.configureGameModel(settings);
             
-        } else if (!settingsModel.getUsePrevious()){
-            Preferences customisedSettings = settingsWindow.getCustomisedSelection();
-            this.configureGameModel(customisedSettings);
             
-            //only set if user does not choose to use previous -- meaning new preferences created
-            gameModel.setPreferences(customisedSettings);
-             
-            
-        }
-        gameModel.init();
+                if (settingsModel.getUsePrevious()){
+                    
+                    Preferences settings = settingsWindow.getSelection();
+                    this.configureGame(settings);
+
+                } else if (!settingsModel.getUsePrevious()){
+                    
+                    Preferences customisedSettings = settingsWindow.getCustomisedSelection();
+                    this.configureGame(customisedSettings);
+
+                    //only set if user does not choose to use previous -- meaning new preferences created
+                    gameModel.setPreferences(customisedSettings);
+
+
+                }
+                SwingUtilities.getWindowAncestor(settingsWindow).dispose();;
+                
+                gameModel.init();
         
-        }
+        } else if (src == settingsWindow.getGoBack()){
+            
+            settingsWindow.getParentFrame().setVisible(false);
+            out.println("going back");
+            
+            //SwingUtilities.getWindowAncestor(GUI).setVisible(false);
+            panel.askForUsingPreviousSetting();
+           
+        } //else if (src == settingsWindow.getConfirmPrevSelectionBtn())
+        
+        
         
         
     }
-
+    public void setInitPanel(InitPanel p){
+        
+        this.panel = p;
+    }
     public void addView(SettingSelectionWindow settingsWindow) {
         this.settingsWindow = settingsWindow;
     }

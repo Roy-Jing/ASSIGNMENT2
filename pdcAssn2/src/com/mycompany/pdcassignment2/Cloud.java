@@ -1,5 +1,6 @@
 package com.mycompany.pdcassignment2;
 
+import java.awt.Image;
 import java.util.Random;
 import javax.swing.ImageIcon;
 
@@ -16,30 +17,29 @@ import javax.swing.ImageIcon;
 
 public class Cloud extends MoveableFigureBaseDecorator{
     
-    Random generator = new Random();
-    
+    private Random generator = new Random();
+    static Image originalForm = new ImageIcon("src/cloud.png").getImage();
+    static Image altForm = originalForm;
+
     
     
     Cloud(MoveableFigure mF){
         super(mF);    
-   
-        this.setImg(new ImageIcon("src/cloud.png").getImage());
-       
-        setOriginalForm(new int[][]{
-       
-            {0,   0, 0, 0, 0, 0, 0, 0, 0,   1, 1,  1, 1, 1, 1, 1, 1, 1},
-            {0,   1, 2, 3, 4, 5, 6, 7, 8,   0, 1, 2,  3, 4, 5, 6, 7, 8}
-        });
+         this.setWidth(200);
+        this.setHeight(30);
+        setOriginalForm(originalForm);
         setVelocityX(-GameModel.getPixelSize());
-        setCoordY(GameModel.getFrameHeight() - 6 * GameModel.getPixelSize());
+        setCoordY(GameModel.getFrameHeight() - getHeight() * 2 - generator.nextInt(3) * this.getHeight() - 1);
         setCoordX(GameModel.getFrameWidth() );
         this.setAltForm(this.getOriginalForm());
-        this.setNumPixels(this.getOriginalForm()[0].length);
+       
         this.setCollisionHandler(new CollideableCollisionHandler(this));
         
         
-        
     }
+    
+    
+
    
     
     /**

@@ -5,8 +5,10 @@
  */
 package com.mycompany.pdcassignment2;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 
@@ -18,8 +20,11 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
 import static java.lang.System.out;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -29,6 +34,7 @@ import javax.swing.ImageIcon;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -54,13 +60,9 @@ public class GameGUI extends JPanel implements Observer {
         return dinoControl;
     }
 
-    private Dimension screenDim;
 
-    public void setScreenDim(Dimension screenDim) {
-        this.screenDim = screenDim;
-    }
    // private JFrame frame;
-    private Deque<MoveableFigure> tempFigs;
+    private List<MoveableFigure> tempFigs;
     
   
     
@@ -72,114 +74,116 @@ public class GameGUI extends JPanel implements Observer {
     }
     
     
-    volatile boolean busy = false;
+    private volatile boolean busy = false;
     
-    int paintCount = 10;
     @Override
-    public void paintComponent(Graphics g){
+    public  void paintComponent(Graphics g){
         super.paintComponent(g);
         
-        g.drawImage(img, 0, 0, null);
+        if (GameModel.isGameOver()){
+            this.displayGameOver(g);
+            return;
+        }
         
+       
+        g.drawImage(img, 0, 0, GameModel.getFrameWidth(), GameModel.getFrameHeight(), null);
+        g.setFont(new Font("Consolas", Font.BOLD, 16));
+        g.setColor(Color.WHITE);
         
-        boolean found = false;
-        MoveableFigure first = tempFigs.peekFirst();
-      
-      
-        MoveableFigure fig;
-        if (!tempFigs.isEmpty()){
-            do{
-               fig = tempFigs.pollLast();
-
-
-
+        g.drawString("Your current score: " + GameModel.getScore(), 0, 10);
+        g.drawString("Number of coins collected :" + GameModel.getCoinCount(), 0, 30);
+        if (tempFigs == null){
+            out.println("null");
+            
+            busy = false;
+            return;
+        }
+        
+            ListIterator<MoveableFigure> it = tempFigs.listIterator(tempFigs.size());
+            if (!it.hasPrevious()){
+                out.println("has previous");
+                
+            }
+            while (it.hasPrevious() ){
+                MoveableFigure fig;
+                fig = it.previous();
                 if (fig.isActive()){
-
+                    
+                    out.println("drawing self");
+                    
                     fig.drawSelf(g);
                     fig.doRun();
-                    tempFigs.addFirst(fig);
-                } 
+                } else
+                    it.remove();
+            }
 
-            } while (fig != first);
-        }
-        
-        if (dino.isActive()){
-            dino.drawSelf(g);
-            // (gui);
-            
-            dino.doRun();
-            
-            
-        }
-        
-        
-       // if (paintCount++ % 10 == 0)
-        //    printGUI();
-       
-        
-        
+        busy = false;
     }
 //    
-    public void printGUI(){
-        for (char [] row : dino.getVirtualGUI()){
-            for (char c : row){
-                out.print(c);
-            }
-            
-             
-            
-        }
-    }
+  
      public void loadPreferences(Preferences p){
         this.setImage(p.bgImage);
         this.setPreferredSize(p.screenDim);
-        this.setVisible(true);
 
+        frame.add(this);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        
+        frame.pack();
+      
+        frame.setResizable(false);
+        
+        frame.setVisible(true);
+
+        
     }
      
     public void addController(GameController control){
         frame.addWindowListener(control);
     } 
     
-    public void initFrame(){
-   
-        frame.add(this);
-
-        frame.setVisible(true);
-
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
+    public void addDinoController(Dinosaur dino){
+        
+        DinoController controller = new DinoController(dino);
+        this.addKeyListener(controller);
+        this.setFocusable(true);
+        this.requestFocus();
+        
     }
     
-    private Dinosaur dino;
    
     @Override
-    public synchronized void update(Observable o, Object arg) {
+    public void update(Observable o, Object arg) {
         
-        if (arg instanceof Deque){
-                
-                if (!busy){
-                    busy = true;
-                    tempFigs = (Deque<MoveableFigure>) arg;
-                     //gui = dino.getGUIObj();
+        //List is presumed to be the list of current in-frame figures.
+        
+        if (!busy && arg instanceof List){
+            
+            busy = true;
+            tempFigs =(List)  arg;
+            
+        } 
+        repaint();
+ 
 
-                    repaint();
-                    busy = false;
-                    //revalidate();
-              
-                }
-           
-               
-        } else if (arg instanceof Dinosaur){
-            this.setFocusable(true);
-            this.requestFocus();
-            this.addKeyListener(new DinoController((Dinosaur) arg));
-            dino = (Dinosaur) arg;
-            this.initFrame();
-        }
     }
     
-    public void setImage(ImageIcon img) {
+    private boolean blinked = false;
+    public void displayGameOver(Graphics g){
+      
+        g.setFont(new Font("Consolas", Font.BOLD, 18));
+
+        if (!blinked){
+            blinked = true;
+            g.drawString("Game Over (:", GameModel.getFrameWidth()/ 2, GameModel.getFrameHeight()/ 2);
+        } else{
+            g.drawString("", this.getWidth() / 2, this.getHeight() / 2);
+            blinked = false;
+        }
+            
+            
+        
+    }
+   public void setImage(ImageIcon img) {
         
             this.img = img.getImage();
             
@@ -188,9 +192,13 @@ public class GameGUI extends JPanel implements Observer {
         
     }
     
+   private JButton replay = new JButton("Replay");
+   
     public void promptQuit(){
         int dialogResult;
+      
         dialogResult = JOptionPane.showConfirmDialog(this, "Are you sure you want to quit?","Warning", JOptionPane.YES_NO_OPTION);
+        
         
         if(dialogResult == JOptionPane.YES_OPTION){
   // Saving code here
@@ -206,28 +214,65 @@ public class GameGUI extends JPanel implements Observer {
             
         }
         
-        
+        new ExitConfirmWindow().promptQuit();
         
     }
-   
-   
     
-}
-
-
-class ExitConfirmWindow extends JFrame{
+    class ExitConfirmWindow extends JFrame{
     private JButton confirmClose = new JButton("Yes");
     private JButton rejectClose = new JButton("No");
-    private GameModel m;
-   
-    public void setModel(GameModel m){
-        this.m = m;
+    private ClickHandler clickHandler = new ClickHandler();
+    ExitConfirmWindow(){
+        this.setLayout(new BorderLayout());
+        this.add(new JLabel("Are you sure you want to quit?"), BorderLayout.NORTH);
+        this.add(this.confirmClose, BorderLayout.WEST);
+        this.add(this.rejectClose, BorderLayout.EAST);
+        confirmClose.addActionListener(clickHandler);
+        rejectClose.addActionListener(clickHandler);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        
     }
     
+    class ClickHandler implements ActionListener{
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(e.getSource() == confirmClose){
+  // Saving code here
+   
+                    model.setGameOver(true);
+                    model.closeSession();
+
+                } else{
+
+
+                    model.setInterrupted(false);
+
+
+                }
+            }
+            
+           
+        
+        }
     
+         public void promptQuit(){
+                        this.setVisible(true);
+
+            }
     
   
 }
+   
+   
+    
+}
+
+
+
+
+
+
 
 
 

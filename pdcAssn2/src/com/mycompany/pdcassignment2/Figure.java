@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.Random;
+import javax.swing.JComponent;
 
 
 
@@ -13,7 +14,7 @@ import java.util.Random;
  * For the meanings of methods of MoveableFigure, examine the class MoveableObject.
  * @author Roy
  */
-public interface Figure {
+public interface Figure{
     
 
     public int getRightMostCoordX();
@@ -30,6 +31,8 @@ public interface Figure {
     
     public void doRun();
     
+   
+  
     
 }
 
@@ -38,19 +41,27 @@ interface CollideableFigure extends Figure{
     
     public void setRightMostCoordX(int c);
     
-   
+
         
 }
 
 
 interface MoveableFigure extends Figure{
+        
+    public int getHeight();
     
+    public void setHeight(int h);
     
+    public int getWidth();
+    
+    public void setWidth(int h);
+     
     public boolean stillWithinFrame();
     
     public int getNumPixels();
 
     public void setNumPixels(int numPixels);
+    
     
     public int getVelocityX();
     
@@ -64,24 +75,15 @@ interface MoveableFigure extends Figure{
     
     public MoveableFigure getNewFigure();
     
-    public char getSymbol();
+    public Image getAltForm();
     
-    public void setSymbol(char c);
+    public void setAltForm(Image img);
     
-    public int[][] getAltForm();
+    public Image getOriginalForm();
     
-    public void setAltForm(int[][] altForm);
-    
-    public int[][] getOriginalForm();
-    
-    public void setOriginalForm(int[][] form);
+    public void setOriginalForm(Image form);
  
     public void drawSelf(Graphics g);
-    
-    public Image getImg();
-    
-    public void setImg(Image img);
-    
     
     public boolean isActive();
     
@@ -95,6 +97,8 @@ interface MoveableFigure extends Figure{
 
     public void setColour(Color clr);
 
+    
+    
     
 }
 

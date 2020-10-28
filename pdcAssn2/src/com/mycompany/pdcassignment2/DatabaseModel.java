@@ -134,6 +134,9 @@ public class DatabaseModel {
             ps.setString(3, pref.diffLevel);
             ps.setString(4, pref.bgImage + "");
             ps.setString(5, this.currentUsername);
+            
+            out.println("pref inserted");
+            
             ps.executeUpdate();
             
          } catch (SQLException ex) {
@@ -159,7 +162,9 @@ public class DatabaseModel {
     
         try {
             ResultSet rs =  myQuery("SELECT * FROM USERS WHERE USERNAME= " + "'" + username + "'");
-            return rs.next();
+            
+            
+            return  rs.next();
         } catch (SQLException ex) {
              out.println("error checking dup");
             
@@ -200,6 +205,7 @@ public class DatabaseModel {
         }
     }
     
+   
     public LinkedHashSet<String> loadPreviousPrefsOf(){
         LinkedHashSet<String> prefs = new LinkedHashSet();
    
@@ -255,8 +261,6 @@ public class DatabaseModel {
             return true;
             
         } catch (SQLException ex) {
-             out.println("cannot create user");
-            ex.printStackTrace();
             return false;
         }
     }
@@ -309,31 +313,6 @@ public class DatabaseModel {
         }
     }
     
-    public void saveMetaData(Data data){
-        
-        try {
-            
-            
-            ResultSet rs = myQuery("SELECT * FROM SCORE_INFO");
-            int highestScore = 0;
-            if (rs.last()){
-                highestScore = rs.getInt("HIGHESTSCORE");
-                if (highestScore < data.currentScore){
-                    highestScore = data.currentScore;
-                }
-            }
-            
-            
-            Date date = new Date();
-            DateFormat fmt = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
-            String formated = fmt.format(date);
-            String username = data.username;
-
-          
-        } catch (SQLException ex) {
-            
-        }
-    }
             
 //    public void savePreferences(Preferences pref){
 //        
@@ -394,16 +373,13 @@ public class DatabaseModel {
                         
                         return true;
                     }
-                     else
-                        throw new SQLException("invalid login");
-                    
-               
+                  
             } catch (SQLException e){
-                e.printStackTrace();
                 
                 return false;
             }
             
+            return false;
     }
 
     public String getCurrentUsername() {
@@ -440,7 +416,13 @@ class Preferences{
         bgImage = new ImageIcon(imgName);
         this.diffLevel = diffLevel;
     }
-    
+    Preferences(String dimString, String imgName, String diffLevel){
+        String dimensions[] = dimString.split("x");
+        
+        screenDim = new Dimension(Integer.parseInt(dimensions[0].trim()), Integer.parseInt(dimensions[1].trim()));
+        bgImage = new ImageIcon(imgName);
+        this.diffLevel = diffLevel;
+    }
     
     Preferences(int dimWidth, int dimHeight, ImageIcon imgName, String diffLevel){
         screenDim = new Dimension(dimWidth, dimHeight);

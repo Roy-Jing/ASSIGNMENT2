@@ -22,12 +22,12 @@ public enum MoveableTypes {
     
     
     private MoveableFigure f;
-   
+    
     private MoveableTypes(MoveableFigure f){
         this.f = f;
         
     }
-
+    
     public MoveableFigure getNewFigure(){
         
         return f.getNewFigure();

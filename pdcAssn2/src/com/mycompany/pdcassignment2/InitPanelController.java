@@ -18,11 +18,13 @@ import javax.swing.SwingUtilities;
  */
 
 class InitPanelController implements ActionListener{
-        private InitPanel p;
+        private InitPanel initPanel;
         private InitPanelModel initModel;
         private SettingSelectionModel settingsModel;
         //private SettingSelectionWindow settingsWind;
         //game model is unnecessary
+        
+       
     public void setInitModel(InitPanelModel initModel) {
         this.initModel = initModel;
     }
@@ -40,7 +42,7 @@ class InitPanelController implements ActionListener{
 //        }
         
         public void addView(InitPanel p){
-            this.p = p;
+            this.initPanel = p;
         }
         
         public void addModel(InitPanelModel m){
@@ -56,51 +58,68 @@ class InitPanelController implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
             JComponent src = (JComponent) e.getSource();
-            if (src == p.getNextButton()){
+            if (src == initPanel.getNextButton()){
                 
-                p.bringToLogin(false);
+                initPanel.bringToLogin(false);
                 
-            } else if (src == p.getLoginButton()){
-                if (initModel.login(p.getUsernameField().getText().trim(), p.getPasswordField().getText().trim())){
-                    if (settingsModel.checkPreviousSettingsExist())
-                        p.askForUsingPreviousSetting();
-                    else
+            } else if (src == initPanel.getLoginButton()){
+                if (initModel.login(initPanel.getUsernameField().getText().trim(), initPanel.getPasswordField().getText().trim())){
+                    if (settingsModel.checkPreviousSettingsExist()){
+                        
+                        initPanel.askForUsingPreviousSetting();
+                     
+                    }
+                    else{
+                        
+                        //there is no game instances for this user yet...so
+                        //load default setting
+                        settingsModel.disableGoBack();
                         settingsModel.loadDefaultSetting();
-                    
-                     //SwingUtilities.getWindowAncestor(p).dispose();
+                        initPanel.getParentFrame().setVisible(false);
 
-                } 
+                     //SwingUtilities.getWindowAncestor(p).dispose();
+                    }
+                    
+                } else{
+                    initPanel.displayError("Login is invalid!");
+                }
                     
                 
-            } else if (src == p.usePrevious()){
+            } else if (src == initPanel.usePrevious()){
                 
                 settingsModel.loadPreviousSetting();
-                SwingUtilities.getWindowAncestor(p).dispose();
+                //SwingUtilities.getWindowAncestor(p).dispose();
+                 initPanel.getParentFrame().setVisible(false);
 
-                
+                 
                
             } 
             //ask for using previous setting
-            else if (src == p.dontUsePrevious()){
+            else if (src == initPanel.dontUsePrevious()){
                 settingsModel.loadDefaultSetting();
-               
+                initPanel.getParentFrame().setVisible(false);
+
                 //settingsModel.loadPreviousSetting();
                 //.bringToNewPreferenceSelection();
-                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(p);
-
-                topFrame.dispose();
-                //parent.dispatchEvent(new WindowEvent(parent, WindowEvent.WINDOW_CLOSING));
 
             
-            } else if (src == p.getCreateNewUserBtn()){
-                if (initModel.createUser(p.getUsernameField().getText(), p.getPasswordField().getText())){
+            } else if (src == initPanel.getCreateNewUserBtn()){
+                
+                if (initModel.createUser(initPanel.getUsernameField().getText(), initPanel.getPasswordField().getText())){
+                                        this.settingsModel.disableGoBack();
+
                     settingsModel.loadDefaultSetting();
                     
-
+                    initPanel.getParentFrame().setVisible(false);
 //settingsWind.bringToNewPreferenceSelection();
+                } else{
+                    initPanel.displayError("The username you entered is a duplicate. Try again.");
+                
                 }
-
-            }  
+                
+                
+                
+            }   
             
         }
         

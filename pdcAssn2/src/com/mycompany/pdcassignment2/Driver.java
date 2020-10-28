@@ -6,27 +6,20 @@
 package com.mycompany.pdcassignment2;
 
 /**
- *
+ *  Entry point for the game. Contains main method.
+ * 
  * @author Roy
  */
+
+
 public class Driver {
      public static void main(String args[]){
-        //if preferences is null (non-existent0
-            //bring user to preferences menu
-             
-          
-        //JFrame f = new JFrame();
-        //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+         
+         //setting up all relationships between the MVCs...
+     
         InitPanel initPanel = new InitPanel();
-        
-       
         GameGUI gameGUI = new GameGUI();
-        
-        
         DatabaseModel dbM = new DatabaseModel();
-        
-        
-        
         GameModel gM = new GameModel();
         gM.addObserver(initPanel);
         gM.addObserver(gameGUI);
@@ -52,17 +45,18 @@ public class Driver {
         settingController.addModel(settingsModel);
         settingController.addView(settingsWindow);
         settingController.setGUI(gameGUI);
-        
+        settingController.setInitPanel(initPanel);
         initController.addModel(initModel);
         initController.addView(initPanel);
         initController.addModel(settingsModel);
         
         GameController gameController = new GameController();
-        gameController.addView(gameGUI);
         gameController.addModel(gM);
+        gameController.addView(gameGUI);
+
         gameGUI.addController(gameController);
         gameGUI.setModel(gM);
-       // dbM.reset();
+        //dbM.reset();
         //dbM.initialiseTables();
         
         initModel.init();

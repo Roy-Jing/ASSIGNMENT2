@@ -5,6 +5,7 @@
  */
 package com.mycompany.pdcassignment2;
 
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import static java.lang.System.out;
@@ -41,18 +42,14 @@ public class DinoController implements KeyListener  {
             switch (key) {
                 case 'w':
 
-                    keyHit = true;
-                    dino.setVelocityY(-6 * GameModel.getPixelSize());
-                    dino.setLanded(false);
+                    dino.setVelocityY(-10 * GameModel.getPixelSize());
                     dino.isJumping(true);
                     if (dino.isHunched()){
-                        dino.hunch(false);
-                        
-                        dino.setPreviouslyHunched(true);
+                        dino.setHunched(false);
                     }
                     dino.setAccelerated(false);
                     dino.setVelocityX(0);
-                  
+                    dino.setShouldMovePart(false);
                     break;
                     
                
@@ -60,19 +57,27 @@ public class DinoController implements KeyListener  {
                 case 'a':
                         
                         if (!dino.isAccelerated()){
-                           
+                                //on floor
+                                if (dino.getFeetLocationY() == GameModel.getFrameHeight() - 2){
+                                    dino.setShouldMovePart(false);
+                                 
+                                } else
+                                    dino.setShouldMovePart(true);
+                                    
+                                    //on a cloud, then Dinosaur should appear to be moving,
+                                    //so set alternative form to a tempForm (which is guaranteed
+                                    //to be different from originalForm.
+                                    
+                                
                                 dino.setAccelerated(true);
-                                dino.setVelocityX(dino.getVelocityX() - 1 * GameModel.getPixelSize());
+                                dino.sprintBackward();
           
                         } 
                    
                        break;
                 case 's':
-                    //out.print("Dino is hunched: " + dino.isHunched());
                     if (!(dino.isHunched())){
                         
-                        out.print("hunching");
-                        //dino.hunch(true);
                         dino.setHunched(true);
                         
                     } break;
@@ -80,14 +85,16 @@ public class DinoController implements KeyListener  {
                 case 'd':
                    
                         if (!dino.isAccelerated()){
-                            
-                            
-                               //out.print("accelerating");
-                               dino.setVelocityX(dino.getVelocityX() + 1 * GameModel.getPixelSize());
+                            //if dinosaur's not on the Floor -- implying on a Cloud.
+                               if (dino.getFeetLocationY() != GameModel.getFrameHeight() - 2){
+                                   dino.setShouldMovePart(true);
+                               }
+                               dino.sprintForward();
+                               dino.setAccelerated(true);
                                
-                                   dino.setAccelerated(true);
-                        } 
-                        break;
+                             
+                           } 
+                    break;
                    
                 default:
                     break;
@@ -131,11 +138,11 @@ public class DinoController implements KeyListener  {
                     dino.setAccelerated(false);
                     if (key == 'a')
 
-                        dino.setVelocityX(dino.getVelocityX() + 1 * GameModel.getPixelSize());
+                        dino.sprintForward();
 
                     else
                         
-                        dino.setVelocityX(dino.getVelocityX() - 1 * GameModel.getPixelSize());
+                        dino.sprintBackward();
                 }
                
         }

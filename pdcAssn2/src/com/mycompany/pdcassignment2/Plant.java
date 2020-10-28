@@ -1,5 +1,8 @@
 package com.mycompany.pdcassignment2;
 
+import java.awt.Image;
+import javax.swing.ImageIcon;
+
 
 
 /**
@@ -9,21 +12,21 @@ package com.mycompany.pdcassignment2;
  * @author Roy
  */
 public class Plant extends MoveableFigureBaseDecorator{
-  
+    
+        static Image originalForm = new ImageIcon("src/cactus.png").getImage();
+        static Image altForm = new ImageIcon("src/cactus.png").getImage();
+
     Plant(MoveableFigure f){
         super(f);
-        setNumPixels(3);
-        setVelocityX(-1 * GameModel.getPixelSize());
-       this.setOriginalForm(new int[][]{
-        {1, 0, -1},
-        { 0, 0, 0}
-       });
-       
-       this.setAltForm(this.getOriginalForm());
-      
+         this.setWidth(30);
+       this.setHeight(60);
+       setVelocityX(-1 * GameModel.getPixelSize());
+       this.setOriginalForm(originalForm);
+       this.setAltForm(altForm);
        setCoordX(GameModel.getFrameWidth() + 5);
-       setCoordY(GameModel.getFrameHeight() - 3); //centre is the mid point
+       setCoordY(GameModel.getFrameHeight() - this.getHeight() - 1); //centre is the mid point
        
+      
     }
     
     @Override

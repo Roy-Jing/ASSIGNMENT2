@@ -4,14 +4,18 @@ package com.mycompany.pdcassignment2;
 
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import static java.lang.System.out;
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -38,7 +42,11 @@ public class MoveableObject implements MoveableFigure{
     private int velocityX;
     private int velocityY = 0;
     private Color selfColour;
+   
+    private Image selfForm0, selfForm1;
 
+ 
+    
     public Color getColour() {
         return selfColour;
     }
@@ -46,12 +54,38 @@ public class MoveableObject implements MoveableFigure{
     public void setSelfColour(Color selfColour) {
         this.selfColour = selfColour;
     }
-     
+    
+  
+    
+
     protected GameModel model;
     private int numPixels;
-    private volatile int coordX;
-    private volatile int coordY;
- 
+    private int coordX;
+    private int coordY;
+    private int width = 10, height = 10;
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+    
+    
+    public Dimension getPreferredSize() {
+        out.println(width + " " + height);
+        return new Dimension(width, height);
+    }
+    
     MoveableObject(String id){
         this.setName(id);
     }
@@ -65,19 +99,31 @@ public class MoveableObject implements MoveableFigure{
     /*
     Alternative form of a MoveableObject on screen.
     */
-    private volatile int[][] altForm;
     
+    private Image altForm;
+    
+    public void drawSelf(Graphics g){
+        Graphics2D g2d = (Graphics2D) g;
+       
+        g2d.setColor(selfColour);
+        //out.println("drawing");
+        
+        g2d.drawImage(originalForm, coordX, coordY, width, height, null);
+        
+       // doRun();
+        
+    }
     /*
     Original form of a MoveableObject on screen.
     */
-    private volatile int[][] originalForm;
+    private Image originalForm;
     @Override
-    public int[][] getOriginalForm() {
+    public Image getOriginalForm() {
         return originalForm;
     }
 
     @Override
-    public void setOriginalForm(int[][] originalForm) {
+    public void setOriginalForm(Image originalForm) {
         this.originalForm = originalForm;
     }
     
@@ -125,10 +171,13 @@ public class MoveableObject implements MoveableFigure{
         return velocityY;
     }
     
+    
+    
     //Check that tis object is still visible within the frame.
     @Override
     public boolean stillWithinFrame(){
-        return this.getRightMostCoordX() >= 0;
+        return coordX + width >= 0;
+        
     }
    
 
@@ -142,21 +191,13 @@ public class MoveableObject implements MoveableFigure{
         this.velocityX = v;
     }
     private int pixelSize = 5;
-    private Image img;
-
-    public Image getImg() {
-        return img;
-    }
-
-    public void setImg(Image img) {
-        this.img = img;
-    }
-    
-    
+ 
+   
     public void move(){
     
         coordX += getVelocityX();
         coordY += this.getVelocityY();
+        
         
         //moved = true;
     }
@@ -166,7 +207,7 @@ public class MoveableObject implements MoveableFigure{
     @Override
     public int getRightMostCoordX() {
         //the coord furthest to the right in the matrix will be the right most coord.
-        return this.getOriginalForm()[1][this.getNumPixels() - 1] + getCoordX();
+        return this.getWidth() + getCoordX();
     }
   
     //This method should only be overriden. What it does is that it instantiates
@@ -181,12 +222,12 @@ public class MoveableObject implements MoveableFigure{
     
     
     @Override
-    public int[][] getAltForm() {
+    public Image getAltForm() {
         return altForm;
     }
 
     @Override
-    public void setAltForm(int[][] altForm) {
+    public void setAltForm(Image altForm) {
         this.altForm = altForm;
     }
     
@@ -203,20 +244,10 @@ public class MoveableObject implements MoveableFigure{
     
     public void setName(String name){
         id = name;
-        Rectangle rect = new Rectangle(100, 100);
        
     }
     
     
-    
-   
-    @Override
-    public void drawSelf(Graphics g) {
-        
-        g.drawImage(img, coordX, coordY, null);
-        
-
-    }
     public void setColour(Color clr){
         this.selfColour = clr;
     }
@@ -227,18 +258,7 @@ public class MoveableObject implements MoveableFigure{
     }
     
     private CollisionHandler handler;
-    
-    private volatile boolean moved = false;
-    
-
-    
-   
-    private boolean canMovebody = false;
-
-    public void setCanMovebody(boolean canMovebody) {
-        this.canMovebody = canMovebody;
-    }
-    
+  
     
     public void setCollisionHandler(CollisionHandler handler){
         this.handler = handler;
@@ -248,7 +268,7 @@ public class MoveableObject implements MoveableFigure{
     
     public void doRun(){
         
-       if (!model.isInterrupted()){
+       if (!model.isInterrupted() ){
            
             if (handler.checkStillWithinFrame()){
                 if (handler.checkForCollision()){
@@ -260,19 +280,17 @@ public class MoveableObject implements MoveableFigure{
                 
                 move();
                 
+                
             } else{
+                out.println("removed " + this.getid() + ": ");
+                //out.print(GameModel.getFigs().remove() + "\n");
                 
-                
+               
                 active = false;
             }
             
            
-        } else{
-
-            //model.setNumCurrentFigs(model.getNumCurrentFigs() - 1);
-            active = false;
-
-        }
+        } 
        
     }
 
@@ -282,16 +300,6 @@ public class MoveableObject implements MoveableFigure{
        
     
  
-   
-    @Override
-    public char getSymbol() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setSymbol(char c) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public void setActive(boolean flag) {
@@ -300,9 +308,13 @@ public class MoveableObject implements MoveableFigure{
 
     @Override
     public void setMoved(boolean flag) {
-        moved = flag;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
+ 
+
+  
+
     
     
 

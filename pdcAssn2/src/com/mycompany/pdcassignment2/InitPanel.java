@@ -4,28 +4,16 @@
  * and open the template in the editor.
  */
 package com.mycompany.pdcassignment2;
-
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import static java.lang.System.out;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -79,6 +67,8 @@ public class InitPanel extends JPanel implements Observer {
         return confirmBtn;
     }
 
+    private JButton goBack = new JButton("Go back");
+    
     public void setConfirmBtn(JButton confirmBtn) {
         this.confirmBtn = confirmBtn;
     }
@@ -91,12 +81,14 @@ public class InitPanel extends JPanel implements Observer {
     public JButton dontUsePrevious() {
         return dontUsePrevious;
     }
-        JButton dontUsePrevious = new JButton("dontUsePrevious, use default settings");
+        JButton dontUsePrevious = new JButton("No, use default settings");
     public JButton getCreateNewUserBtn() {
         return createNewUserBtn;
     }
     
-    
+     public JFrame getParentFrame(){
+            return parentFrame;
+        }
     
     private GridBagConstraints gbc = new GridBagConstraints();
     private JScrollPane messagePane;
@@ -104,40 +96,53 @@ public class InitPanel extends JPanel implements Observer {
 
     public void askForUsingPreviousSetting(){
         //GameModel's preferences at this point is not null.
-        this.removeAll();
-        
-        //promptWindow = new JPanel();
-        usePrevious.addActionListener(controller);
-        //this.add(promptWindow);
-        //fillSettings()
-       
-        this.setLayout(new BoxLayout( this, BoxLayout.Y_AXIS));
-        
-        JLabel message = new JLabel("Previous settings exist, would you like to use them?");
-        
-        JPanel buttonPanel = new JPanel();
-        
-        buttonPanel.add(usePrevious);
-        buttonPanel.add(dontUsePrevious);
-        
-        usePrevious.addActionListener(controller);
-        dontUsePrevious.addActionListener(controller);
-        
-        add(message);
-        add(buttonPanel);
-        //parentFrame.add(promptWindow);
-        
-        //JFrame promptWind = new JFrame();
-        //add(promptWindow);
-        this.setSize(100, 100);
-        //setVisible(true);
-        this.repaint();
-        this.revalidate();
-               
+        if (!askedForPrevious){
+            askedForPrevious = true;
+            this.removeAll();
+
+            //promptWindow = new JPanel();
+            //this.add(promptWindow);
+            //fillSettings()
+
+            this.setLayout(new BoxLayout( this, BoxLayout.Y_AXIS));
+
+            JLabel message = new JLabel("Previous settings exist, would you like to use them?");
+
+            JPanel buttonPanel = new JPanel();
+
+            buttonPanel.add(usePrevious);
+            buttonPanel.add(dontUsePrevious);
+
+            usePrevious.addActionListener(controller);
+            dontUsePrevious.addActionListener(controller);
+
+            add(message);
+            add(buttonPanel);
+            //parentFrame.add(promptWindow);
+            //JFrame promptWind = new JFrame();
+            //add(promptWindow);
+           // parentFrame.setPreferredSize(new Dimension(500, 500));
+            //parentFrame.pack();
+            
+            //parentFrame.setResizable(false);
+            parentFrame.setVisible(true);
+           // this.setVisible(true);
+            parentFrame.pack();
+            this.revalidate();
+            this.repaint();
+
+
+        } else{
+            out.println("bringing to askPref again!");
+            
+            this.parentFrame.setVisible(true);
+            this.setVisible(true);
+        }
     }
     
+    boolean askedForPrevious = false;
     
-    InitPanel(){
+    public InitPanel(){
         
         
         this.setLayout(new GridBagLayout());
@@ -198,6 +203,9 @@ public class InitPanel extends JPanel implements Observer {
                         + "line, type \"y\" when prompted (Hit enter to continue)."
 
                         + "That's everything, have fun!");
+        
+        text.setEditable(false);
+        
         messagePane = new JScrollPane(text);
         nextButton = new JButton("next");
        
@@ -205,8 +213,10 @@ public class InitPanel extends JPanel implements Observer {
         add(this.messagePane);
           
         nextButton.addActionListener(controller);
-          
+        
         addAt(2, 2, nextButton );
+        
+        
         
     }
     
@@ -231,7 +241,6 @@ public class InitPanel extends JPanel implements Observer {
         if (arg instanceof Boolean){
             
             parentFrame.add(this);
-            parentFrame.setVisible(true);
             
             boolean prevExist = (boolean) arg;
             if (!prevExist)
@@ -241,21 +250,33 @@ public class InitPanel extends JPanel implements Observer {
                 
                 //this.askForUsingPreviousSetting();
             }
+            parentFrame.pack();
+            parentFrame.setVisible(true);
+
+            parentFrame.setResizable(false);
+            
+            
         } else if (arg instanceof Error){
             
             this.displayError(((Error) arg).errMsg);
-        }
+        } 
             
+        
        
     }
     
-    private void addAt(int x, int y, JComponent comp, int ...width){
+    //the addAt method assumes a layout of GridBagLayout.
+    //it adds a JComponent at x, y and optional varargs widtAndHeight.
+    private void addAt(int x, int y, JComponent comp, int ...widthAndHeight){
         
         
         gbc.gridx = x;
         gbc.gridy = y;
-        if (width.length != 0)
-            gbc.gridwidth = width[0];
+        if (widthAndHeight.length != 0){
+            gbc.gridwidth = widthAndHeight[0];
+            if (widthAndHeight.length > 1)
+                gbc.gridheight = widthAndHeight[1];
+        }
         else
             gbc.gridwidth = 5;
         
@@ -264,7 +285,7 @@ public class InitPanel extends JPanel implements Observer {
     }
     
     
-  
+    //Bring user to the login page...
     public void bringToLogin(boolean canLogin){
         
         this.removeAll();
@@ -280,15 +301,20 @@ public class InitPanel extends JPanel implements Observer {
      
         addAt(10, 3, loginButton);
         
+        
         if (canLogin){
             loginButton.addActionListener(controller);
         } else{
             loginButton.setEnabled(false);
         }
-      
+        
         addAt(3, 3, this.createNewUserBtn);
         createNewUserBtn.addActionListener(controller);
         
+        parentFrame.setResizable(true);
+        parentFrame.pack();
+        
+       //parentFrame.setResizable(false);
         repaint();
         revalidate();
     }

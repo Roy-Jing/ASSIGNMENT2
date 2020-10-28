@@ -7,11 +7,13 @@ package com.mycompany.pdcassignment2;
 
 import java.awt.Dimension;
 import static java.lang.System.out;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Observable;
 import java.util.Observer;
@@ -27,9 +29,16 @@ import javax.swing.JTextField;
  */
 public class GameModel extends Observable implements Runnable{
 
+    public static int getScore() {
+        return currentScore;
+    }
     
-    private int currentScore = 0;
-    private static volatile int numCoinsCollected = 0;
+    public static int getCoinCount(){
+        return numCoinsCollected;
+    }
+    
+    private static int currentScore = 0;
+    private static int numCoinsCollected = 0;
     private String difficulty;
     
     
@@ -57,7 +66,6 @@ public class GameModel extends Observable implements Runnable{
         GameModel.numCoinsCollected = numCoinsCollected;
     }
     private Preferences preferences;
-    private static boolean reset = false;
     private static volatile boolean drawing = false;
     
     public static boolean isDrawing() {
@@ -75,10 +83,6 @@ public class GameModel extends Observable implements Runnable{
     public static void addCoins(){
         numCoinsCollected += 1;
        
-    }
-    public static boolean reset(){
-        return reset;
-        
     }
     
     public void init(){
@@ -115,15 +119,6 @@ public class GameModel extends Observable implements Runnable{
     private volatile static int drawCount = 0;
     private static volatile boolean gameOver = false;
     private int spawnPeriod = 5000;
-    
-  
-    private static boolean onPause = false;
-    
-    public void pause(boolean flag){
-        onPause = flag;
-    }
-    
-
     
    
     public static int getFrameWidth() {
@@ -187,11 +182,8 @@ public class GameModel extends Observable implements Runnable{
  
     private volatile int drawCountLim;
 
-    public synchronized void addDrawCount(){
-        drawCount++;
-    }
-    
-    private final int MAX_NUM_FIGS = 5;
+   
+    private int MAX_NUM_FIGS = 5;
     
     public synchronized int getNumCurrentFig(){
         return figs.size();
@@ -201,36 +193,48 @@ public class GameModel extends Observable implements Runnable{
     public static boolean isGameOver(){
         return gameOver;
     }
-    Deque<MoveableFigure> figs = new LinkedList();
-    public void initDino(){
-        
-        Dinosaur d = new Dinosaur(new MoveableObject("Dino"));
-        d.addModel(this);
-        //figs.add(d);
-   
-        setChanged();
-        
-        
-        notifyObservers(d);
-        
-        CollisionHandler.addDino(d);
+    static List<MoveableFigure> figs = Collections.synchronizedList(new ArrayList());
+    
+
+    public static List<MoveableFigure> getFigs() {
+        return figs;
     }
+
+    public static void setFigs(ArrayList<MoveableFigure> figs) {
+        GameModel.figs = figs;
+    }
+    public Dinosaur initDino(){
+        dino = new Dinosaur(new MoveableObject("Dino"));
+        dino.addModel(this);
+        figs.add(dino);
+        CollisionHandler.addDino(dino);
+        
+        
+        return dino;
+    }
+    
     
     private Data userData;
     
-    public static void setDimensions(Dimension d){
+    public void setDimensions(Dimension d){
         frameHeight = d.height;
         frameWidth = d.width;
       
     }
-    public void generateNewFigures(){
+    
+    public MoveableFigure generateNewFigures(){
         int numValues =  MoveableTypes.values().length;
                         
         MoveableFigure fig = MoveableTypes.values()[rand.nextInt(numValues)].getNewFigure();
-
+        
         fig.addModel(this);
+        
         //adding new figure while painting
-        figs.addLast(fig);
+       
+        figs.add(fig);
+      
+        return fig;
+        
     }
     public void printWelcome(){
         int dialogResult;
@@ -240,45 +244,63 @@ public class GameModel extends Observable implements Runnable{
        
     
     }
+    Dinosaur dino = null;
     
+    
+    private int sleepTime = 150;
+    
+   
     public void run(){
         
-        int frameCount = 0;
-        initDino();
-        while (!gameOver){
-        if (!interrupted){
+        while (true){
+            
+            if (!gameOver){
+                
+            if (!interrupted){
                 
                 
-               
+//                out.println("There are " + figs.size() + "numver of figures");
+                
                     if (figs.size() < MAX_NUM_FIGS ){
+                       
                         this.generateNewFigures();
                     }
                     
                 
-                this.setChanged();
-                this.notifyObservers(figs);
-                
-                
+               
+                 //roughly 2 minutes
+                if (currentScore++ % 1000 == 0 && currentScore < 10000){
+                    sleepTime -= 5;
+                    
+                }
                 
                 
             
         }
         
-        try {
-                    Thread.sleep(200);
+               
+        } 
+             this.setChanged();
+             this.notifyObservers(figs);
+                
+            //game over, so this is to notify game gui of game over
+            try {
                     
-                } catch (InterruptedException ex) {
-                }
+                Thread.sleep(sleepTime);
+                    
+            } catch (InterruptedException ex) {
+                
+            }
         }
         
-        
     }
-  
+    
     
     public void closeSession(){
         
         //dbM.savePreferences(preferences);
         if (preferences != null){
+            
             dbM.savePreferences(preferences);
             
         }
@@ -296,12 +318,25 @@ public class GameModel extends Observable implements Runnable{
 
     public void setDiffLevel(String diffLevel) {
         this.difficulty = diffLevel;
+        
+        switch (diffLevel){
+            case "Easy":
+                this.MAX_NUM_FIGS = 4;
+                sleepTime = 150;
+                break;
+            case "Medium":
+                this.MAX_NUM_FIGS = 6;
+                sleepTime = 130;
+                break;
+            case "Hard":
+                this.MAX_NUM_FIGS = 8;
+                sleepTime = 120;
+                break;
+            
+        }
     }
 
-    void savePreferences(Preferences customisedSettings) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+  
  
     
 }

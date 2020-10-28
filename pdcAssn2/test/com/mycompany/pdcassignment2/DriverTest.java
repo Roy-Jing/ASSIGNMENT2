@@ -29,13 +29,15 @@ import static org.junit.Assert.*;
 public class DriverTest {
     
     private Connection conn;
+    private static DatabaseModel dbM;
     public DriverTest() {
     }
     
     @BeforeClass
     public static void setUpClass() throws SQLException {
         
-        
+        dbM = new DatabaseModel();
+
     }
     
     @AfterClass
@@ -58,6 +60,7 @@ public class DriverTest {
     public void tearDown() {
         try {
             conn.close();
+            
         } catch (SQLException ex) {
             Logger.getLogger(DriverTest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -68,7 +71,6 @@ public class DriverTest {
     public void testInitialisingDatabase() {
         try {
             out.println("setting up database");
-            DatabaseModel dbM = new DatabaseModel();
             dbM.reset();
             
             dbM.initialiseTables();
@@ -81,10 +83,9 @@ public class DriverTest {
             
             assertEquals(true, usersExist && settingsExist);
         } catch (SQLException ex) {
-            Logger.getLogger(DriverTest.class.getName()).log(Level.SEVERE, null, ex);
+            fail();
         }
         // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
     
     @Test
@@ -132,5 +133,15 @@ public class DriverTest {
         assertEquals(collide, true);
     }
     
+    @Test
+    public void testVerifyLogin(){
+        String username = "test";
+        String password = "test";
+        
+        dbM.createUser(username, password);
+        dbM.closeConnections();
+        assertEquals(dbM.login(username, password), true);
+        
+    }
     
 }

@@ -1,6 +1,9 @@
 package com.mycompany.pdcassignment2;
 
 import java.awt.Graphics;
+import java.awt.Image;
+import java.util.Random;
+import javax.swing.ImageIcon;
 
 
 /**
@@ -10,22 +13,20 @@ import java.awt.Graphics;
  */
 public class Bird extends Animal{
     
+   static Image originalForm = new ImageIcon("src/birdUp.png").getImage();
+    static Image altForm = new ImageIcon("src/birdDown.png").getImage();
+    Random generator = new Random();
+    
     
     Bird(MoveableFigure f){
         super(f);
         
-       setAltForm(new int[][]{
-             {0,  0, 0, 0, 0, -1, -1, 1, 1, -1},
-             {0,  1, 2, 3, 4,  2, 3, 2, 3, 5}
-         });
-         setOriginalForm(new int[][]{
-           {0,  0, 0, 0, 0, -1,-2, 1, 2, -1},
-           {0,  1, 2, 3, 4,  2, 3, 2, 3, 5}}
-         );
-      
+        this.setWidth(80);
+        this.setHeight(40);
+       setAltForm(altForm);
+         setOriginalForm(originalForm);
        setCoordX(GameModel.getFrameWidth() + 5);
-       setCoordY(GameModel.getFrameHeight() - 8);
-       setNumPixels(this.getAltForm()[0].length);
+       setCoordY(GameModel.getFrameHeight() - getHeight() * (2 + generator.nextInt(3)) + 3 );
        this.setVelocityX(-2 * GameModel.getPixelSize());
        
      

@@ -16,14 +16,10 @@ import java.awt.Image;
  *
  * @author Roy
  */
-public abstract  class MoveableFigureBaseDecorator implements MoveableFigure{
+public  abstract class MoveableFigureBaseDecorator implements MoveableFigure{
     
     protected MoveableFigure figure;
 
-    @Override
-    public char getSymbol() {
-        return figure.getSymbol();
-    }
     
     public void setCollisionHandler(CollisionHandler handler){
         figure.setCollisionHandler(handler);
@@ -42,11 +38,7 @@ public abstract  class MoveableFigureBaseDecorator implements MoveableFigure{
         return figure.isActive();
     }
   
-    @Override
-    public void setSymbol(char symbol) {
-        figure.setSymbol(symbol);
-    }
-    
+ 
     public void setMoved(boolean flag){
         figure.setMoved(flag);
     }
@@ -138,7 +130,7 @@ public abstract  class MoveableFigureBaseDecorator implements MoveableFigure{
     }
     
     @Override
-   public int[][] getAltForm() {
+   public Image getAltForm() {
         return figure.getAltForm();
     }
     
@@ -147,37 +139,49 @@ public abstract  class MoveableFigureBaseDecorator implements MoveableFigure{
         figure.addModel(m);
     }
     @Override
-    public void setAltForm(int[][] altForm) {
-        figure.setAltForm(altForm);
+    public void setAltForm(Image img) {
+        figure.setAltForm(img);
     }
     
     @Override
-    public int[][] getOriginalForm() {
+    public Image getOriginalForm() {
         return figure.getOriginalForm();
     }
     
    
     @Override
-    public void setOriginalForm(int[][] form) {
+    public void setOriginalForm(Image form) {
        figure.setOriginalForm(form);
     }
+      
+    public MoveableObject getObject (){
+        return (MoveableObject) figure;
         
+    }
 
     public void drawSelf(Graphics g){
         figure.drawSelf(g);
     }
 
     @Override
-    public Image getImg() {
-        return figure.getImg();   
-    
+    public int getHeight() {
+        return  figure.getHeight();
     }
-    
-    
 
     @Override
-    public void setImg(Image img) {
-        figure.setImg(img);
+    public void setHeight(int h) {
+        figure.setHeight(h);
+    }
+
+    @Override
+    public int getWidth() {
+        return  figure.getWidth();
+        
+    }
+
+    @Override
+    public void setWidth(int h) {
+        figure.setWidth(h);
     }
     
    

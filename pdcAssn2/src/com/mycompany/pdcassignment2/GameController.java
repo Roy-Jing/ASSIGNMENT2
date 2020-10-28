@@ -5,17 +5,15 @@
  */
 package com.mycompany.pdcassignment2;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 /**
- *
+ * Controller for the GameGUI, as per the MVC paradigm.
  * @author Roy
  */
-public class GameController extends WindowAdapter implements WindowListener {
+public class GameController extends WindowAdapter implements WindowListener{
     
     private GameGUI GUI;
     private GameModel model;
@@ -34,11 +32,18 @@ public class GameController extends WindowAdapter implements WindowListener {
         this.model = model;
     }
     
+    
     public void windowClosing(WindowEvent e){
-        model.setInterrupted(true);
-        GUI.promptQuit();
+        if (!GameModel.isGameOver()){
+            model.setInterrupted(true);
+            GUI.promptQuit();
+        } else{
+            model.closeSession();
+        }
         
     }
+    
+    
     
     
 }

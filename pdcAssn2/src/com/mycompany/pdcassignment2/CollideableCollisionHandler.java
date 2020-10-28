@@ -5,6 +5,8 @@
  */
 package com.mycompany.pdcassignment2;
 
+import java.awt.Image;
+import java.awt.Shape;
 import static java.lang.System.out;
 
 /**
@@ -29,33 +31,63 @@ public class CollideableCollisionHandler extends CollisionHandler{
     }
     
     public boolean checkStillWithinFrame(){
-        return self.getCoordX() >= 0;
+        return self.getCoordX() + self.getWidth() >= 0;
         
         
     }
-    public boolean checkForCollision(){
-               ;
+    
+    public boolean willIntersect(){
         
-         char[][] gui = dino.getVirtualGUI();
         
-        //This condition check can skip this method if Dinosaur is currently jump
-        //but not down. (As obviously jumping up will not cause the Dino to land
-        //on any figures.
-        int dVelocityY = dino.getVelocityY();
-        if (dVelocityY < 0 )
-            return false;
-        if (self instanceof Cloud && dino.isJumping() && dino.getVelocityY() > 0){
-             out.println("cloud");
-            
-             out.println("dino coordX" + dino.getCoordX());
-            
-             out.println("dino previous coordY" + dino.getCoordY());
-             out.println("dino coordY" + (dino.getCoordY() + dVelocityY));
-             out.println("cloud coord y" + (self.getCoordY()));
-                    
-             out.println("cloud coordX" + self.getCoordX() );
+        int dinoBottomCoordY = dino.getCoordY() + dino.getHeight();
+        int dinoRightEdge = dino.getCoordX() + dino.getWidth();
+//        out.println(dinoRightEdge <= self.getCoordX() + self.getVelocityX());
+//        
+//        //self's coord y will always be negative.
+//        //with this in mind, this difference plus self's coordY is < self's coordY
+//        out.println("dinorightedge = " + dinoRightEdge);
+//        out.println("dinoleftedge = " + dino.getCoordX());
+//        
+//        out.println("this.rightCoordX" + self.getCoordX() + self.getWidth());
+//        out.println("this.leftCoordX" + self.getCoordX());
 
+        if (dinoRightEdge <= self.getCoordX() + self.getWidth()&&
+                dino.getCoordX() >= self.getCoordX()){
+           
         }
+        //else (if difference is 0 or +ve, then it won't
+        return ( dinoBottomCoordY  - self.getCoordY() < 0 &&
+             (dino.getCoordX() >= self.getCoordX() &&
+                dinoRightEdge <= self.getRightMostCoordX() )
+                && (dinoBottomCoordY + dino.getVelocityY() - self.getCoordY()) >= 0);
+
+    }
+    
+    public void handleFall(){
+        dino.isJumping(true);
+        dino.setAccelerated(false);
+     
+        dino.setVelocityX(-1);
+    }
+    public boolean checkIfWillFallOff(){
+        int dinoBottomCoordY = dino.getFeetLocationY();
+      
+        if (dinoBottomCoordY == self.getCoordY() - 1){
+            out.println("yes");
+            if (dino.getCoordX() >= self.getCoordX() && 
+                    dino.getCoordX() + dino.getVelocityX() < self.getCoordX() + self.getVelocityX()||
+                        (dino.getRightFootCoordX()  <= self.getRightMostCoordX() &&
+                            dino.getRightFootCoordX() + dino.getVelocityX() > self.getRightMostCoordX() + self.getVelocityX()))
+                return true;
+        }
+        
+        return false;
+    }
+   public boolean checkForCollision(){
+       
+       if (dino.getVelocityY() < 0 ){
+           return false;
+       }
         //use the utility method willIntersect(int) to determine when the Dinosaur will
         //dino's feet y coordinate plus its velocity will intersect the collider's
         //"boundary coord", namely the collider's y coordinate closest to top of
@@ -64,13 +96,21 @@ public class CollideableCollisionHandler extends CollisionHandler{
        //Suppose the dino's "feetLocationY" is at 20 currently and that the
        //boundary coord is at 21. Now, isAboveFigure(int) will return true
        //for isAboveFigure(
+       if (this.checkIfWillFallOff()){
+           
+           this.handleFall();
+           return false;
+       }
        if (willIntersect()){
+           
+           out.println("colliding");
            
            adjustedVelocity = self.getCoordY() - dino.getFeetLocationY() - 1;
            
            return true;
 
        }
+       
        
        //return -1, signalling that the velocity needs not be adjusted.
        return false;
@@ -82,6 +122,7 @@ public class CollideableCollisionHandler extends CollisionHandler{
         
         dino.setVelocityY(adjustedVelocity);
         if (dino.isJumping()){
+             
              //resetting dinosaur's horizontal velocity to 0
              //because when dinosaur lands, it should not appear to
              //be moving on the screen.

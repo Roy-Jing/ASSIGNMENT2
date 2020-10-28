@@ -1,6 +1,8 @@
   package com.mycompany.pdcassignment2;
 
-import java.awt.Graphics;
+import java.awt.Image;
+
+//Animal is an abstract decorator that wraps a MoveableObject.
 
 public abstract class Animal extends MoveableFigureBaseDecorator{   
     
@@ -22,7 +24,7 @@ public abstract class Animal extends MoveableFigureBaseDecorator{
     
     public void movePart(){
         
-        int[][] tempForm = this.getOriginalForm();
+        Image tempForm = this.getOriginalForm();
         this.setOriginalForm(super.getAltForm());
         this.setAltForm(tempForm);
         

@@ -18,31 +18,37 @@ public class Coin extends MoveableFigureBaseDecorator{
     private int value;
    
     private boolean isCollected = false;
-    private int ovalWidth = 10;
-    private int coinSize = 10;
+    private int ovalWidth = 50;
+    private int coinSize = 50;
     private Random generator = new Random();
     
     public int getCoinSize() {
         return coinSize;
     }
+    
+    
     private int spinDir = -1;
     Coin(MoveableFigure fig){
         super(fig);
         setCollisionHandler(new CoinCollisionHandler(this));
         
         setColour(Color.YELLOW);
-        setCoordY(GameModel.getFrameHeight() - (generator.nextInt(10) + 5));
+        setCoordY(GameModel.getFrameHeight() - (generator.nextInt(10) + ovalWidth));
         setCoordX(GameModel.getFrameWidth()  - ovalWidth);
         this.setVelocityX(-1 * GameModel.getPixelSize());
+      
         
     }
+    
+   
+    
     
     public boolean stillWithinFrame(){
         return ovalWidth / 2 + this.getCoordX() >= 0;
     }
     
     public void spin(){
-        if (ovalWidth == 0){
+        if (ovalWidth == 3){
             spinDir = 1;
         } else if (ovalWidth == coinSize){
             spinDir = -1;
@@ -87,28 +93,8 @@ class CoinCollisionHandler extends MoveableCollisionHandler{
     public void handleCollision(){
         GameModel.addCoin();
         
-     
         ((Coin)self).setActive(false);
         
     }
-    
-    
-    public boolean checkForCollision() {
-        
-        
-        char[][] virtualGUI = dino.getVirtualGUI();
-        out.println(dino.getCoordX());
-        out.println(self.getCoordX());
-        
-        
-            if (GameModel.pixelInFrame(self.getCoordX(), self.getCoordY()) && 
-                    virtualGUI[self.getCoordY()][self.getCoordX()] == '!'){
-                 out.println("collision detected by coin ");
-                
-                return true;
-            }
-       
-        
-        return false;
-    }
+   
 }

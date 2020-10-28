@@ -25,45 +25,42 @@ public class MoveableCollisionHandler extends CollisionHandler{
     
     
     
-    @Override
-    public boolean checkForCollision(){
-            
-        
-        //char[][] copyVitual = dino.getVirtualGUI();
+     public boolean checkForCollision(){
         if (!(self instanceof Dinosaur)){
-            char[][] virtualGUI = dino.getVirtualGUI();
+            if (dino.getVelocityY() < 0)
+            return false;
         
-            if (GameModel.pixelInFrame(self.getCoordX(), self.getCoordY()))
-                 virtualGUI[self.getCoordY() ][self.getCoordX()] = '/';
-                 
-        int[][] selfForm = self.getOriginalForm();
-        int coordX = self.getCoordX();
-        int coordY = self.getCoordY();
-        int velX = self.getVelocityX();
-        int velY = self.getVelocityY();
-        
-        for (int c = 0; c < self.getNumPixels(); c++){
+        else{
             
-            int cX= selfForm[1][c] + coordX + velX;
-            int cY = selfForm[0][c] + coordY + velY;
-            
-            if (GameModel.pixelInFrame(cX, cY) && virtualGUI[cY][cX] == '!'){
-                 out.println("COLLISION DETECTED");
-                return true;
-                //System.exit(0);
-            }
-                 
-        }   
+       
+            int dinoHeight = dino.getHeight();
+            int dinoWidth = dino.getWidth();
+
+            int dinoCoordY = dino.getCoordY();
+            int dinoCoordX = dino.getCoordX();
+            int selfCoordY  = self.getCoordY();
+            int selfCoordX = self.getCoordX();
+            int selfWidth = self.getWidth();
+            int selfHeight = self.getHeight();
+
+            //if none of the conditions are true, then it means dinosaur must intersect
+            //(or overlap) with this object
+            return (!(dinoCoordY + dinoHeight < selfCoordY || selfCoordY + selfHeight < dinoCoordY || 
+            selfCoordX + selfWidth < dinoCoordX || dinoCoordX + dinoWidth < selfCoordX));
+
+
+   
         
         }
-       return false; 
-    }
-    
-    
-    
-    @Override
+     
+        } else 
+            return false;
+     }
+     
+     @Override
     public void handleCollision() {
-        
+        out.println("will collide");
+        GameModel.setGameOver(true);
        // GameModel.setGameOver(true);
         
     }
