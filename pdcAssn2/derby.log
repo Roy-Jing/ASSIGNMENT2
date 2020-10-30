@@ -1,7 +1,20 @@
 ----------------------------------------------------------------
-Wed Oct 28 14:05:30 NZDT 2020:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0175-6cbd-0bab-000006d59408 
-on database directory C:\Users\Roy\Documents\NetBeansProjects\PDCAssn2\ASSIGNMENT2\pdcAssn2\gameDB with class loader sun.misc.Launcher$AppClassLoader@610455d6 
+Fri Oct 30 23:06:07 NZDT 2020:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0175-78f8-b888-000006b70b10 
+on database directory C:\Users\Roy\Documents\NetBeansProjects\PDCAssn2\ASSIGNMENT2\pdcAssn2\gameDB with class loader sun.misc.Launcher$AppClassLoader@2b193f2d 
+Loaded from file:/C:/Users/Roy/Downloads/db-derby-10.14.2.0-lib/db-derby-10.14.2.0-lib/lib/derby.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_261-b12
+user.dir=C:\Users\Roy\Documents\NetBeansProjects\PDCAssn2\ASSIGNMENT2\pdcAssn2
+os.name=Windows 10
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Fri Oct 30 23:06:07 NZDT 2020:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a02ac013-0175-78f8-b888-000006b70b10 
+on database directory C:\Users\Roy\Documents\NetBeansProjects\PDCAssn2\ASSIGNMENT2\pdcAssn2\PlayerDB with class loader sun.misc.Launcher$AppClassLoader@2b193f2d 
 Loaded from file:/C:/Users/Roy/Downloads/db-derby-10.14.2.0-lib/db-derby-10.14.2.0-lib/lib/derby.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.8.0_261-b12
